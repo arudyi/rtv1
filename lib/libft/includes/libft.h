@@ -6,13 +6,13 @@
 /*   By: arudyi <arudyi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/10/24 13:02:28 by arudyi            #+#    #+#             */
-/*   Updated: 2018/11/11 18:42:02 by arudyi           ###   ########.fr       */
+/*   Updated: 2019/02/18 13:00:23 by arudyi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef LIBFT_H
 # define LIBFT_H
-# define BUFF_SIZE 10
+# define BUFF_SIZE 9999
 
 # include <string.h>
 # include <stdlib.h>
