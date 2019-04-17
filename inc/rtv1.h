@@ -6,7 +6,7 @@
 /*   By: arudyi <arudyi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/28 16:50:17 by arudyi            #+#    #+#             */
-/*   Updated: 2019/04/11 19:29:57 by arudyi           ###   ########.fr       */
+/*   Updated: 2019/04/17 18:09:49 by arudyi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,7 @@ typedef struct s_sphere
 
 typedef struct s_object3d
 {
+    double specular;
     int     color;
     int     type_of_data;
     void    *data;
@@ -93,7 +94,7 @@ typedef struct		s_elem
 	int				size_line;
     
     int             is_intersect;
-    
+    int             is_shadow;
     t_vector        intersect;
     t_player        player;
     int             nbr_of_obj;
@@ -123,4 +124,7 @@ int ft_check_size(t_vector vec, int type_of_object, t_elem *s_pixel);
 double  ft_dot_product(t_vector vec1, t_vector vec2);
 int ft_lighting(int color, int t, t_elem *s_pixel, t_vector position, t_vector direction);
 unsigned ft_change_color(unsigned color, double k);
+double ft_vector_len(t_vector vec);
+int ft_is_shadow(t_elem *s_pixel, double t, t_vector direction);
+void ft_change_light(int key, t_elem *s_pixel);
 #endif

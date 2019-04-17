@@ -6,7 +6,7 @@
 /*   By: arudyi <arudyi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/28 16:50:13 by arudyi            #+#    #+#             */
-/*   Updated: 2019/04/16 13:41:41 by arudyi           ###   ########.fr       */
+/*   Updated: 2019/04/17 18:25:42 by arudyi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -266,9 +266,27 @@ void ft_change_position(int key, t_elem *s_pixel)
         s_pixel->player.position.x += 10;
 }
 
-void ft_chagne_object(int key, t_elem *s_pixel)
+void ft_change_object(int key, t_elem *s_pixel)
 {
 
+}
+
+void ft_change_light(int key, t_elem *s_pixel)
+{
+    if (key == 86)
+        s_pixel->arr_light[0].position.x -= 30;
+    if (key == 88)
+        s_pixel->arr_light[0].position.x += 30;
+
+    if (key == 91)
+        s_pixel->arr_light[0].position.y -= 30;
+    if (key == 84)
+        s_pixel->arr_light[0].position.y += 30;
+
+    if (key == 89)
+        s_pixel->arr_light[0].position.z -= 30;
+    if (key == 83)
+        s_pixel->arr_light[0].position.z += 30;
 }
 
 int	ft_check_key(int key, t_elem *s_pixel)
@@ -279,8 +297,10 @@ int	ft_check_key(int key, t_elem *s_pixel)
         ft_wait_for_input(s_pixel);
     if (key == 0 || key == 1 || key == 2 || key == 13 || key == 12 || key == 6)
         ft_change_position(key, s_pixel);
-    if (key == 78 || key == 69)
-        ft_chagne_object(key, s_pixel);
+    //if (key == 78 || key == 69)
+      //  ft_change_object(key, s_pixel);
+    if (key == 86 || key == 88 || key == 91 || key == 84 || key == 89 || key == 83)
+        ft_change_light(key, s_pixel);
     ft_refresh(s_pixel);
     ft_main_draw(s_pixel);
 	return (0);
@@ -313,8 +333,6 @@ double ft_intersect_ray_sphere(t_vector position, t_elem *s_pixel, t_vector dire
     double radius;
     t_vector oc;
 
-    //printf("i = %d\n", i);
-    //print(((t_sphere *)s_pixel->arr_object3d[i].data)->center);
     oc = position - ((t_sphere *)s_pixel->arr_object3d[i].data)->center;
     radius = ((t_sphere *)s_pixel->arr_object3d[i].data)->radius;
     a = ft_dot_product(direction, direction);
@@ -343,22 +361,20 @@ double ft_intersect_ray_sphere(t_vector position, t_elem *s_pixel, t_vector dire
 
 double ft_intersect_ray_plane(t_vector position, t_elem *s_pixel, t_vector direction, int i)
 {
-    double t;
-    t_vector k1;
+    t_vector x;
+    t_vector normal;
+    double k1;
     double k2;
-    double k3;
 
-    k1 = ((t_plane *)s_pixel->arr_object3d[i].data)->point - position;
-    k2 = ft_dot_product(k1, ((t_plane *)s_pixel->arr_object3d[i].data)->normal);
-    k3 = ft_dot_product(direction, ((t_plane *)s_pixel->arr_object3d[i].data)->normal);
+    x = position - ((t_plane *)s_pixel->arr_object3d[i].data)->point;
+    normal = ft_normalize_vector(((t_plane *)s_pixel->arr_object3d[i].data)->normal - ((t_plane *)s_pixel->arr_object3d[i].data)->point);
 
-    if ((int)k3 == 0)
+    k1 = ft_dot_product(-x, normal);
+    k2 = ft_dot_product(direction, normal);
+    if (k2 == 0)
         return (-1);
-    t = k2 / k3;
-    //printf("%f\n", t);
-    if (t < 0)
-        return (-1); 
-    return (t);
+
+    return (k1 / k2);
 }
 
 double ft_intersect_ray_cone(t_vector position, t_elem *s_pixel, t_vector direction, int i)
@@ -378,7 +394,8 @@ double ft_intersect_ray_cone(t_vector position, t_elem *s_pixel, t_vector direct
     t_vector x;
     t_vector v;
 
-    v = ft_normalize_vector(((t_cone *)s_pixel->arr_object3d[i].data)->p2 - ((t_cone *)s_pixel->arr_object3d[i].data)->p1); // p2 <=> p1
+    v = ((t_cone *)s_pixel->arr_object3d[i].data)->p2 - ((t_cone *)s_pixel->arr_object3d[i].data)->p1;
+    v = ft_normalize_vector(v);
     direction = ft_normalize_vector(direction);
     x = position - ((t_cone *)s_pixel->arr_object3d[i].data)->p1;
 
@@ -486,25 +503,99 @@ double ft_intersect_ray_cylinder(t_vector position, t_elem *s_pixel, t_vector di
     return (-1);
 }
 
+int ft_is_shadow(t_elem *s_pixel, double t, t_vector direction)
+{
+    int i;
+    int k;
+    double tmp;
+    double t_max;
+    t_vector ray_light;
+    t_vector position;
+
+    k = -1;
+    position = s_pixel->player.position + direction * t;
+    while (++k < s_pixel->nbr_of_light)
+    {
+        if (s_pixel->arr_light[k].type_of_light == 1)
+        {
+            ray_light = s_pixel->arr_light[k].position - position;// player or dot P position
+            t_max = ft_vector_len(ray_light);
+        }
+        else
+        {
+            ray_light = s_pixel->arr_light[k].position;
+            t_max = 10000;
+        }
+        i = -1;
+        while (++i < s_pixel->nbr_of_obj)
+        {
+            if (s_pixel->arr_object3d[i].type_of_data == 0)
+            {
+                //printf("Hi\n");
+                tmp = ft_intersect_ray_sphere(position, s_pixel, ray_light, i);
+                if (tmp < t_max && tmp >= 0.001)
+                {
+                    s_pixel->is_shadow++;
+                    //printf("sphere\n");
+                }
+            }
+            if (s_pixel->arr_object3d[i].type_of_data == 1)
+            {
+                tmp = ft_intersect_ray_cylinder(position, s_pixel, ray_light, i);
+                if (tmp < t_max && tmp >= 0.001)
+                {
+                    s_pixel->is_shadow++;
+                }
+            }
+            /*if (s_pixel->arr_object3d[i].type_of_data == 2)
+            {
+                tmp = ft_intersect_ray_plane(position, s_pixel, ray_light, i);
+                if (tmp < t_max && tmp >= 0.1)
+                {
+                    s_pixel->is_shadow++;
+                    printf("plane\n");
+                }
+            }*/
+            if (s_pixel->arr_object3d[i].type_of_data == 3)
+            {
+                tmp = ft_intersect_ray_cone(position, s_pixel, ray_light, i);
+                if (tmp < t_max && tmp >= 0.001)
+                {
+                    s_pixel->is_shadow++;
+                }
+            }
+        }
+    }
+    if (s_pixel->is_shadow == s_pixel->nbr_of_light)
+    {
+        s_pixel->is_shadow = 0;
+        //printf("shadow\n");
+        return (1);
+    }
+    //printf("no_shadow\n");
+    return (0);
+}
+
 int ft_trace_ray(t_vector position, t_elem *s_pixel, t_vector direction, int i)
 {
-    int t;
-    int tmp;
+    double t;
+    double tmp;
     int color;
+    t_vector normal;
+    double m;
 
     color = 0x000000;
     t = 100000;
     while (++i < s_pixel->nbr_of_obj)
-    {
-        
+    {   
         if (s_pixel->arr_object3d[i].type_of_data == 0)
         {
             tmp = ft_intersect_ray_sphere(position, s_pixel, direction, i);
             if (tmp < t && tmp >= 0)
             {
+                t = tmp;
                 s_pixel->normal_now = ft_normalize_vector((position + direction * t) - ((t_sphere *)s_pixel->arr_object3d[i].data)->center);
                 s_pixel->is_intersect = 1;
-                t = tmp;
                 color = s_pixel->arr_object3d[i].color;
             }
         }
@@ -513,8 +604,16 @@ int ft_trace_ray(t_vector position, t_elem *s_pixel, t_vector direction, int i)
             tmp = ft_intersect_ray_cylinder(position, s_pixel, direction, i);
             if (tmp < t && tmp >= 0)
             {
-                s_pixel->is_intersect = 1;
                 t = tmp;
+                t_vector vec = ft_normalize_vector(((t_cylinder *)s_pixel->arr_object3d[i].data)->p2 - ((t_cylinder *)s_pixel->arr_object3d[i].data)->p1);
+ 
+                m = ft_dot_product((position + direction * t) - ((t_cylinder *)s_pixel->arr_object3d[i].data)->p1, vec);
+                
+                normal = ft_normalize_vector((position + direction * t) - (vec * m));//////////////
+         
+                
+                s_pixel->normal_now = ft_normalize_vector(normal);
+                s_pixel->is_intersect = 1;
                 color = s_pixel->arr_object3d[i].color;
             }
         }
@@ -523,8 +622,9 @@ int ft_trace_ray(t_vector position, t_elem *s_pixel, t_vector direction, int i)
             tmp = ft_intersect_ray_plane(position, s_pixel, direction, i);
             if (tmp < t && tmp >= 0)
             {
-                s_pixel->is_intersect = 1;
                 t = tmp;
+                s_pixel->normal_now = ft_normalize_vector((position + direction * t) + (((t_plane *)s_pixel->arr_object3d[i].data)->normal - ((t_plane *)s_pixel->arr_object3d[i].data)->point));
+                s_pixel->is_intersect = 1;
                 color = s_pixel->arr_object3d[i].color;
             }
         }
@@ -533,8 +633,13 @@ int ft_trace_ray(t_vector position, t_elem *s_pixel, t_vector direction, int i)
             tmp = ft_intersect_ray_cone(position, s_pixel, direction, i);
             if (tmp < t && tmp >= 0)
             {
-                s_pixel->is_intersect = 1;
+                t_vector vec1 = (position + direction * t) - ((t_cone *)s_pixel->arr_object3d[i].data)->p1;
+                t_vector vec2 = ft_normalize_vector(((t_cone *)s_pixel->arr_object3d[i].data)->p2 - ((t_cone *)s_pixel->arr_object3d[i].data)->p1);
                 t = tmp;
+                m = sqrt(ft_dot_product(vec1, vec1)) / cos(((t_cone *)s_pixel->arr_object3d[i].data)->angle / 2 / 180 * 3.14);
+                normal = (position + direction * t) - (vec2 * m);
+                s_pixel->is_intersect = 1;
+                s_pixel->normal_now = ft_normalize_vector(normal);
                 color = s_pixel->arr_object3d[i].color;
             }
         }
@@ -549,13 +654,15 @@ int ft_lighting(int color, int t, t_elem *s_pixel, t_vector position, t_vector d
     int i;
     double k;
     double n_dot_l;
+    double r_dot_v;
     t_vector p;
     t_vector normal;
     t_vector ray_light;
+    t_vector r;
     
     normal = s_pixel->normal_now;
     p = position + direction * t;
-    k = 0.0;
+    k = 0.1;// 0.3///////////////////////////////////////////////////////////////////////
     i = -1;
     while (++i < s_pixel->nbr_of_light)
     {
@@ -564,20 +671,38 @@ int ft_lighting(int color, int t, t_elem *s_pixel, t_vector position, t_vector d
         else
         {
             if (s_pixel->arr_light[i].type_of_light == 1)
-            {
-                ray_light = s_pixel->arr_light[i].position - p;
-            }
+                ray_light = s_pixel->arr_light[i].position - p; // - p
             else
-                ray_light = s_pixel->arr_light[i].position;
+                ray_light = s_pixel->arr_light[i].position; // ...
+            //////shadow
+            if (ft_is_shadow(s_pixel, t, direction) == 1)
+                break ;
+            /////////Diffuse
             n_dot_l = ft_dot_product(normal, ray_light);
-            //printf("%f\n", n_dot_l);
             if (n_dot_l > 0)
                 k = k + s_pixel->arr_light[i].intensity * n_dot_l / sqrt(ft_dot_product(ray_light, ray_light));
+            //specular
+            /*if (s_pixel->arr_object3d[i].specular > 0)
+            {
+                r = 2 * normal * ft_dot_product(normal, ray_light) - ray_light;
+                r_dot_v = ft_dot_product(r, -direction);
+                if (r_dot_v > 0)
+                {
+                    k = k + s_pixel->arr_light[i].intensity * pow(r_dot_v / (ft_vector_len(r) * ft_vector_len(-direction)), s_pixel->arr_object3d[i].specular);
+                }
+            }*/
         }
     }
-    //printf("light = %f\n", k);
     color = ft_change_color(color, k);
     return (color);
+}
+
+double ft_vector_len(t_vector vec)
+{
+    double len;
+
+    len = sqrt(ft_dot_product(vec, vec)); 
+    return (len);
 }
 
 unsigned ft_change_color(unsigned color, double k)
@@ -650,6 +775,7 @@ int ft_validate_input(char *line, t_elem *s_pixel)
         s_sphere->center.y = s_pixel->player.position.y;
         s_sphere->center.z = s_pixel->player.position.z + 1000;
         s_sphere->radius = 100.0;
+        s_pixel->arr_object3d[i].specular = 200;
         s_pixel->arr_object3d[i].color = 0x999900;
         s_pixel->arr_object3d[i].type_of_data = 0;
         s_pixel->arr_object3d[i].data = (t_sphere *)s_sphere;
@@ -666,11 +792,12 @@ int ft_validate_input(char *line, t_elem *s_pixel)
         cylinder->p1.z = s_pixel->player.position.z + 1000;
 
         cylinder->p2.x = s_pixel->player.position.x;
-        cylinder->p2.y = s_pixel->player.position.y - 1;
+        cylinder->p2.y = s_pixel->player.position.y + 1;
         cylinder->p2.z = s_pixel->player.position.z + 1000;
 
         cylinder->radius = 50;
-        cylinder->height = 200;
+        cylinder->height = 250;
+        s_pixel->arr_object3d[i].specular = 200;
         s_pixel->arr_object3d[i].color = 0x00FF00;
         s_pixel->arr_object3d[i].type_of_data = 1;
         s_pixel->arr_object3d[i].data = (t_cylinder *)cylinder;
@@ -681,12 +808,13 @@ int ft_validate_input(char *line, t_elem *s_pixel)
     if (ft_strcmp(line, "add plane") == 0)
     {
         plane = (t_plane *)malloc(sizeof(t_plane));
-        plane->point.x = s_pixel->player.position.x; // 0
-        plane->point.y = -10; 
-        plane->point.z = 10;
-        plane->normal.x = s_pixel->player.position.x;// - s_pixel->player.position.x; // 0
-        plane->normal.y = 100;
-        plane->normal.z = 10;
+        plane->point.x = 0;
+        plane->point.y = -300; 
+        plane->point.z = 1000;
+        plane->normal.x = 0;
+        plane->normal.y = -299;
+        plane->normal.z = 1000;
+        s_pixel->arr_object3d[i].specular = 0; // 200
         s_pixel->arr_object3d[i].color = 0xFFFFFF;
         s_pixel->arr_object3d[i].type_of_data = 2;
         s_pixel->arr_object3d[i].data = (t_plane *)plane;
@@ -703,11 +831,12 @@ int ft_validate_input(char *line, t_elem *s_pixel)
         cone->p1.z = s_pixel->player.position.z + 1000;
 
         cone->p2.x = s_pixel->player.position.x;
-        cone->p2.y = s_pixel->player.position.y - 400;
+        cone->p2.y = s_pixel->player.position.y - 1;
         cone->p2.z = s_pixel->player.position.z + 1000;
     
-        cone->height = 200;
+        cone->height = 400;
         cone->angle = 45;
+        s_pixel->arr_object3d[i].specular = 600;
         s_pixel->arr_object3d[i].color = 0x00FFFF;
         s_pixel->arr_object3d[i].data = (t_cone *)cone;
         s_pixel->arr_object3d[i].type_of_data = 3;
@@ -723,7 +852,7 @@ int ft_validate_input(char *line, t_elem *s_pixel)
             return (0);
         }
         s_pixel->arr_light[k].type_of_light = 0;
-        s_pixel->arr_light[k].intensity = 0.5;
+        s_pixel->arr_light[k].intensity = 0.3;
         s_pixel->nbr_of_light++;
         k++;
         return (1);
@@ -735,6 +864,7 @@ int ft_validate_input(char *line, t_elem *s_pixel)
             write(1, "Light max!\n", 11);
             return (0);
         }
+        //printf("HI\n");
         s_pixel->arr_light[k].type_of_light = 1;
         s_pixel->arr_light[k].intensity = 3.0;
         s_pixel->arr_light[k].position.x = s_pixel->player.position.x;
@@ -788,8 +918,10 @@ void ft_prepare_programm(t_elem *s_pixel)
     s_pixel->player.position.y = 0;
     s_pixel->player.position.z = 0;
     s_pixel->is_intersect = 0;
+    s_pixel->is_shadow = 0;
     s_pixel->player.d = 1000.0;
     s_pixel->nbr_of_obj = 0;
+    s_pixel->nbr_of_light = 0;
     ft_main_draw(s_pixel);
 }
 
