@@ -6,7 +6,7 @@
 /*   By: arudyi <arudyi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/28 16:50:17 by arudyi            #+#    #+#             */
-/*   Updated: 2019/04/17 18:09:49 by arudyi           ###   ########.fr       */
+/*   Updated: 2019/04/18 15:36:07 by arudyi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 # include <stdlib.h>
 # include <math.h>
 # include <mlx.h>
+# include <float.h>
 # include "../lib/libft/includes/libft.h"
 # define WIDTH 1000
 # define HEIGHT 1000
@@ -93,8 +94,9 @@ typedef struct		s_elem
 	char			*begin_str;
 	int				size_line;
     
+    int             depth_recursive;
+    int             color_now;
     int             is_intersect;
-    int             is_shadow;
     t_vector        intersect;
     t_player        player;
     int             nbr_of_obj;
@@ -125,6 +127,6 @@ double  ft_dot_product(t_vector vec1, t_vector vec2);
 int ft_lighting(int color, int t, t_elem *s_pixel, t_vector position, t_vector direction);
 unsigned ft_change_color(unsigned color, double k);
 double ft_vector_len(t_vector vec);
-int ft_is_shadow(t_elem *s_pixel, double t, t_vector direction);
+int ft_is_shadow(t_elem *s_pixel, double t, t_vector direction, int i);
 void ft_change_light(int key, t_elem *s_pixel);
 #endif

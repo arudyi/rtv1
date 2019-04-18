@@ -6,7 +6,7 @@
 /*   By: arudyi <arudyi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/28 16:50:13 by arudyi            #+#    #+#             */
-/*   Updated: 2019/04/17 18:25:42 by arudyi           ###   ########.fr       */
+/*   Updated: 2019/04/18 15:36:22 by arudyi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -494,85 +494,81 @@ double ft_intersect_ray_cylinder(t_vector position, t_elem *s_pixel, t_vector di
     else
     {
         if (t1 >= 0 && t2 < 0)
+        {
             if (0 <= m1 && m1 <= ((t_cylinder *)s_pixel->arr_object3d[i].data)->height)
                 return (t1);
+        }
         if (t1 < 0 && t2 >= 0)
+        {
             if (0 <= m2 && m2 <= ((t_cylinder *)s_pixel->arr_object3d[i].data)->height)
                 return (t2);
+        }
     }
     return (-1);
 }
 
-int ft_is_shadow(t_elem *s_pixel, double t, t_vector direction)
+int ft_is_shadow(t_elem *s_pixel, double t, t_vector direction, int i)
 {
-    int i;
     int k;
     double tmp;
     double t_max;
     t_vector ray_light;
     t_vector position;
 
-    k = -1;
     position = s_pixel->player.position + direction * t;
-    while (++k < s_pixel->nbr_of_light)
+    if (s_pixel->arr_light[i].type_of_light == 1)
+    {   
+        ray_light = s_pixel->arr_light[i].position - position;
+        t_max = ft_vector_len(ray_light);
+    }
+    else if (s_pixel->arr_light[i].type_of_light == 2)
     {
-        if (s_pixel->arr_light[k].type_of_light == 1)
+        ray_light = s_pixel->arr_light[i].position;
+        t_max = DBL_MAX;
+    }
+    k = -1;
+    //printf("Hi\n");
+    while (++k < s_pixel->nbr_of_obj)
+    {
+        //printf("k = %d\n", k);
+        if (s_pixel->arr_object3d[k].type_of_data == 0)
         {
-            ray_light = s_pixel->arr_light[k].position - position;// player or dot P position
-            t_max = ft_vector_len(ray_light);
-        }
-        else
-        {
-            ray_light = s_pixel->arr_light[k].position;
-            t_max = 10000;
-        }
-        i = -1;
-        while (++i < s_pixel->nbr_of_obj)
-        {
-            if (s_pixel->arr_object3d[i].type_of_data == 0)
+            tmp = ft_intersect_ray_sphere(position, s_pixel, ray_light, k);
+            if (tmp < t_max && tmp >= DBL_MIN)
             {
-                //printf("Hi\n");
-                tmp = ft_intersect_ray_sphere(position, s_pixel, ray_light, i);
-                if (tmp < t_max && tmp >= 0.001)
-                {
-                    s_pixel->is_shadow++;
-                    //printf("sphere\n");
-                }
+                //printf("sphere\n");
+                return (1);//shadow
             }
-            if (s_pixel->arr_object3d[i].type_of_data == 1)
+        }
+        else if (s_pixel->arr_object3d[k].type_of_data == 1)
+        {
+            tmp = ft_intersect_ray_cylinder(position, s_pixel, ray_light, k);
+            if (tmp < t_max && tmp >= DBL_MIN)
             {
-                tmp = ft_intersect_ray_cylinder(position, s_pixel, ray_light, i);
-                if (tmp < t_max && tmp >= 0.001)
-                {
-                    s_pixel->is_shadow++;
-                }
+                //printf("cylinder\n");
+                return (1);//shadow
             }
-            /*if (s_pixel->arr_object3d[i].type_of_data == 2)
+        }
+        else if (s_pixel->arr_object3d[k].type_of_data == 2)
+        {
+            tmp = ft_intersect_ray_plane(position, s_pixel, ray_light, k);
+            if (tmp < t_max && tmp >= DBL_MIN)
             {
-                tmp = ft_intersect_ray_plane(position, s_pixel, ray_light, i);
-                if (tmp < t_max && tmp >= 0.1)
-                {
-                    s_pixel->is_shadow++;
-                    printf("plane\n");
-                }
-            }*/
-            if (s_pixel->arr_object3d[i].type_of_data == 3)
+                //printf("plane\n");
+                return (1);//shadow
+            }
+        }
+        else if (s_pixel->arr_object3d[k].type_of_data == 3)
+        {
+            tmp = ft_intersect_ray_cone(position, s_pixel, ray_light, k);
+            if (tmp < t_max && tmp >= DBL_MIN)
             {
-                tmp = ft_intersect_ray_cone(position, s_pixel, ray_light, i);
-                if (tmp < t_max && tmp >= 0.001)
-                {
-                    s_pixel->is_shadow++;
-                }
+                //printf("cone\n");
+                return (1);//shadow
             }
         }
     }
-    if (s_pixel->is_shadow == s_pixel->nbr_of_light)
-    {
-        s_pixel->is_shadow = 0;
-        //printf("shadow\n");
-        return (1);
-    }
-    //printf("no_shadow\n");
+    //no_shadow
     return (0);
 }
 
@@ -585,7 +581,7 @@ int ft_trace_ray(t_vector position, t_elem *s_pixel, t_vector direction, int i)
     double m;
 
     color = 0x000000;
-    t = 100000;
+    t = DBL_MAX; //100000
     while (++i < s_pixel->nbr_of_obj)
     {   
         if (s_pixel->arr_object3d[i].type_of_data == 0)
@@ -606,12 +602,8 @@ int ft_trace_ray(t_vector position, t_elem *s_pixel, t_vector direction, int i)
             {
                 t = tmp;
                 t_vector vec = ft_normalize_vector(((t_cylinder *)s_pixel->arr_object3d[i].data)->p2 - ((t_cylinder *)s_pixel->arr_object3d[i].data)->p1);
- 
                 m = ft_dot_product((position + direction * t) - ((t_cylinder *)s_pixel->arr_object3d[i].data)->p1, vec);
-                
-                normal = ft_normalize_vector((position + direction * t) - (vec * m));//////////////
-         
-                
+                normal = ft_normalize_vector(((position + direction * t) - ((t_cylinder *)s_pixel->arr_object3d[i].data)->p1 - (vec * m)));//////////////
                 s_pixel->normal_now = ft_normalize_vector(normal);
                 s_pixel->is_intersect = 1;
                 color = s_pixel->arr_object3d[i].color;
@@ -623,7 +615,7 @@ int ft_trace_ray(t_vector position, t_elem *s_pixel, t_vector direction, int i)
             if (tmp < t && tmp >= 0)
             {
                 t = tmp;
-                s_pixel->normal_now = ft_normalize_vector((position + direction * t) + (((t_plane *)s_pixel->arr_object3d[i].data)->normal - ((t_plane *)s_pixel->arr_object3d[i].data)->point));
+                s_pixel->normal_now = ft_normalize_vector((position + direction * t) + (((t_plane *)s_pixel->arr_object3d[i].data)->normal));
                 s_pixel->is_intersect = 1;
                 color = s_pixel->arr_object3d[i].color;
             }
@@ -644,6 +636,7 @@ int ft_trace_ray(t_vector position, t_elem *s_pixel, t_vector direction, int i)
             }
         }
     }
+    s_pixel->color_now = color;
     if (s_pixel->is_intersect == 1)
         return (ft_lighting(color, t, s_pixel, position, direction));
     return (0);
@@ -662,27 +655,27 @@ int ft_lighting(int color, int t, t_elem *s_pixel, t_vector position, t_vector d
     
     normal = s_pixel->normal_now;
     p = position + direction * t;
-    k = 0.1;// 0.3///////////////////////////////////////////////////////////////////////
+    k = 0.1;
     i = -1;
     while (++i < s_pixel->nbr_of_light)
     {
         if (s_pixel->arr_light[i].type_of_light == 0)
-            k = k + s_pixel->arr_light[i].intensity;
+            k += s_pixel->arr_light[i].intensity;
         else
         {
             if (s_pixel->arr_light[i].type_of_light == 1)
-                ray_light = s_pixel->arr_light[i].position - p; // - p
+                ray_light = s_pixel->arr_light[i].position - p;
             else
-                ray_light = s_pixel->arr_light[i].position; // ...
+                ray_light = s_pixel->arr_light[i].position;
             //////shadow
-            if (ft_is_shadow(s_pixel, t, direction) == 1)
-                break ;
+            if (ft_is_shadow(s_pixel, t, direction, i) == 1)
+                continue ;
             /////////Diffuse
             n_dot_l = ft_dot_product(normal, ray_light);
             if (n_dot_l > 0)
-                k = k + s_pixel->arr_light[i].intensity * n_dot_l / sqrt(ft_dot_product(ray_light, ray_light));
+                k += s_pixel->arr_light[i].intensity * n_dot_l / ft_vector_len(ray_light);
             //specular
-            /*if (s_pixel->arr_object3d[i].specular > 0)
+            if (s_pixel->arr_object3d[i].specular > 0)
             {
                 r = 2 * normal * ft_dot_product(normal, ray_light) - ray_light;
                 r_dot_v = ft_dot_product(r, -direction);
@@ -690,7 +683,7 @@ int ft_lighting(int color, int t, t_elem *s_pixel, t_vector position, t_vector d
                 {
                     k = k + s_pixel->arr_light[i].intensity * pow(r_dot_v / (ft_vector_len(r) * ft_vector_len(-direction)), s_pixel->arr_object3d[i].specular);
                 }
-            }*/
+            }
         }
     }
     color = ft_change_color(color, k);
@@ -798,7 +791,7 @@ int ft_validate_input(char *line, t_elem *s_pixel)
         cylinder->radius = 50;
         cylinder->height = 250;
         s_pixel->arr_object3d[i].specular = 200;
-        s_pixel->arr_object3d[i].color = 0x00FF00;
+        s_pixel->arr_object3d[i].color = 0x007700;
         s_pixel->arr_object3d[i].type_of_data = 1;
         s_pixel->arr_object3d[i].data = (t_cylinder *)cylinder;
         s_pixel->nbr_of_obj++;
@@ -883,9 +876,9 @@ int ft_validate_input(char *line, t_elem *s_pixel)
         }
         s_pixel->arr_light[k].type_of_light = 2;
         s_pixel->arr_light[k].intensity = 1.5;
-        s_pixel->arr_light[k].position.x = s_pixel->player.position.x;
-        s_pixel->arr_light[k].position.y = s_pixel->player.position.y;
-        s_pixel->arr_light[k].position.z = s_pixel->player.position.z + 1000;
+        s_pixel->arr_light[k].position.x = 50000;
+        s_pixel->arr_light[k].position.y = 50000;
+        s_pixel->arr_light[k].position.z = 50000;
         s_pixel->nbr_of_light++;
         k++;
         return (1);
@@ -918,7 +911,7 @@ void ft_prepare_programm(t_elem *s_pixel)
     s_pixel->player.position.y = 0;
     s_pixel->player.position.z = 0;
     s_pixel->is_intersect = 0;
-    s_pixel->is_shadow = 0;
+    s_pixel->depth_recursive = 0;
     s_pixel->player.d = 1000.0;
     s_pixel->nbr_of_obj = 0;
     s_pixel->nbr_of_light = 0;
