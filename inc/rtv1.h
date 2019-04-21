@@ -6,7 +6,7 @@
 /*   By: arudyi <arudyi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/28 16:50:17 by arudyi            #+#    #+#             */
-/*   Updated: 2019/04/18 15:36:07 by arudyi           ###   ########.fr       */
+/*   Updated: 2019/04/20 18:10:40 by arudyi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,8 @@ typedef struct s_sphere
 
 typedef struct s_object3d
 {
-    double specular;
+    double  reflective;
+    double  specular;
     int     color;
     int     type_of_data;
     void    *data;
@@ -61,8 +62,10 @@ typedef struct s_object3d
 
 typedef struct s_player
 {
-    t_vector position;
-    double d;
+    t_vector    position;
+    double      d;
+    int rotate;
+    t_vector    rotation;
 }               t_player;
 
 typedef struct s_keys
@@ -94,8 +97,12 @@ typedef struct		s_elem
 	char			*begin_str;
 	int				size_line;
     
+    double          t_min;
+    double          t_max;
     int             depth_recursive;
     int             color_now;
+    int             obj_now;
+    int             reflected_color;
     int             is_intersect;
     t_vector        intersect;
     t_player        player;
@@ -129,4 +136,6 @@ unsigned ft_change_color(unsigned color, double k);
 double ft_vector_len(t_vector vec);
 int ft_is_shadow(t_elem *s_pixel, double t, t_vector direction, int i);
 void ft_change_light(int key, t_elem *s_pixel);
+t_vector ft_reflect_ray(t_vector r, t_vector normal);
+unsigned ft_add_color(unsigned color1, unsigned color2);
 #endif
