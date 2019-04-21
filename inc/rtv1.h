@@ -6,7 +6,7 @@
 /*   By: arudyi <arudyi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/28 16:50:17 by arudyi            #+#    #+#             */
-/*   Updated: 2019/04/20 18:10:40 by arudyi           ###   ########.fr       */
+/*   Updated: 2019/04/21 16:41:58 by arudyi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,8 +64,11 @@ typedef struct s_player
 {
     t_vector    position;
     double      d;
-    int rotate;
-    t_vector    rotation;
+    int rotate_left;
+    int rotate_right;
+    double angle_gor;
+    double angle_ver;
+    t_vector pov;
 }               t_player;
 
 typedef struct s_keys
@@ -102,7 +105,6 @@ typedef struct		s_elem
     int             depth_recursive;
     int             color_now;
     int             obj_now;
-    int             reflected_color;
     int             is_intersect;
     t_vector        intersect;
     t_player        player;
@@ -138,4 +140,5 @@ int ft_is_shadow(t_elem *s_pixel, double t, t_vector direction, int i);
 void ft_change_light(int key, t_elem *s_pixel);
 t_vector ft_reflect_ray(t_vector r, t_vector normal);
 unsigned ft_add_color(unsigned color1, unsigned color2);
+t_vector ft_rotate_camera(t_vector direction, t_elem *s_pixel);
 #endif

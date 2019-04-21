@@ -6,7 +6,7 @@
 /*   By: arudyi <arudyi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/28 16:50:13 by arudyi            #+#    #+#             */
-/*   Updated: 2019/04/21 13:02:03 by arudyi           ###   ########.fr       */
+/*   Updated: 2019/04/21 17:59:26 by arudyi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,16 +28,6 @@ t_vector ft_normalize_vector(t_vector vec)
     vec.z /= len;
     
     return (vec);
-}
-
-t_vector ft_canvas_to_viewport(double x, double y) 
-{
-    t_vector direction;
-
-    direction.x = x / 1000 - 0.5;
-    direction.y = 0.5 + -y / 1000;
-    direction.z = 1;
-    return (direction);
 }
 
 int exit_program(t_elem *s_pixel)
@@ -126,11 +116,12 @@ int ft_get_object(t_elem *s_pixel, int x, int y)
     double t;
     double tmp;
   
-    t = 100000;
+    t = DBL_MAX;
     i = -1;
     while (++i < s_pixel->nbr_of_obj)
     {
         direction = ft_canvas_to_viewport(x, y);
+        direction = ft_rotate_camera(direction, s_pixel);
         if (s_pixel->arr_object3d[i].type_of_data == 0)
         {
             if ((tmp = ft_intersect_ray_sphere(s_pixel->player.position, s_pixel, direction, i)) > 0)
@@ -252,46 +243,35 @@ void ft_wait_for_input(t_elem *s_pixel)
 
 void ft_change_position(int key, t_elem *s_pixel)
 {
-    double new_x;
-    double new_y;
-    double new_z;
-    static double angle = 0;
+    double angle1;
+    double angle2;
+
+    angle1 = s_pixel->player.angle_gor / 180 * 3.14;
+    angle2 = s_pixel->player.angle_ver / 180 * 3.14;
     if (key == 12)
-        s_pixel->player.position.y += 20;
+        s_pixel->player.position.y += 20;//up
     if (key == 6)
-        s_pixel->player.position.y -= 20;
+        s_pixel->player.position.y -= 20;//down
     if (key == 13)
-        s_pixel->player.position.z += 20;
+    {
+        s_pixel->player.position.x = s_pixel->player.position.x + 40 * sin(angle1);
+        s_pixel->player.position.z = s_pixel->player.position.z + 40 * cos(angle1);
+        s_pixel->player.position.y = s_pixel->player.position.y + 40 * sin(angle2);
+    }
     if (key == 1)
-        s_pixel->player.position.z -= 20;
+    {
+        s_pixel->player.position.x = s_pixel->player.position.x + -40 * sin(angle1);
+        s_pixel->player.position.z = s_pixel->player.position.z + -40 * cos(angle1);
+        s_pixel->player.position.y = s_pixel->player.position.y + -40 * sin(angle2);
+    }
     if (key == 0)
-    {
-        s_pixel->player.rotate = 1;
-        //s_pixel->player.rotation.x -= 0.1;
-        //s_pixel->player.rotation.y -= 0.1;
-        //s_pixel->player.rotation.z -= 0.1;
-        /*angle--;
-        if (angle < 0)
-            angle = 360;
-        new_y = s_pixel->player.rotation.y * cos(angle / 180 * 3.14) + s_pixel->player.rotation.z * sin(angle / 180 * 3.14);
-        new_z = -s_pixel->player.rotation.y * sin(angle / 180 * 3.14) + s_pixel->player.rotation.z * cos(angle / 180 * 3.14);
-        s_pixel->player.rotation.y = new_y;
-        s_pixel->player.rotation.z = new_z;*/
-    }
+        s_pixel->player.angle_gor = (s_pixel->player.angle_gor <= 0) ? 360 : s_pixel->player.angle_gor - 1;
     if (key == 2)
-    {
-        s_pixel->player.rotate = 1;
-        //s_pixel->player.rotation.x += 0.1;
-        //s_pixel->player.rotation.y += 0.1;
-        //s_pixel->player.rotation.z += 0.1;
-        /*angle++;
-        if (angle > 360)
-            angle = 0;
-        new_y = s_pixel->player.rotation.y * cos(angle / 180 * 3.14) + s_pixel->player.rotation.z * sin(angle / 180 * 3.14);
-        new_z = -s_pixel->player.rotation.y * sin(angle / 180 * 3.14) + s_pixel->player.rotation.z * cos(angle / 180 * 3.14);
-        s_pixel->player.rotation.y = new_y;
-        s_pixel->player.rotation.z = new_z;*/
-    }
+        s_pixel->player.angle_gor = (s_pixel->player.angle_gor >= 360) ? 1 : s_pixel->player.angle_gor + 1;
+    if (key == 8)
+        s_pixel->player.angle_ver = (s_pixel->player.angle_ver <= 0) ? 360 : s_pixel->player.angle_ver - 1;
+    if (key == 14)
+        s_pixel->player.angle_ver = (s_pixel->player.angle_ver >= 360) ? 1 : s_pixel->player.angle_ver + 1;
 }
 
 void ft_change_object(int key, t_elem *s_pixel)
@@ -323,7 +303,7 @@ int	ft_check_key(int key, t_elem *s_pixel)
 		exit_program(s_pixel);
     if (key == 10)
         ft_wait_for_input(s_pixel);
-    if (key == 0 || key == 1 || key == 2 || key == 13 || key == 12 || key == 6)
+    if (key == 0 || key == 1 || key == 2 || key == 13 || key == 12 || key == 6 || key == 14 || key == 8)
         ft_change_position(key, s_pixel);
     //if (key == 78 || key == 69)
       //  ft_change_object(key, s_pixel);
@@ -617,7 +597,7 @@ int ft_trace_ray(t_vector position, t_elem *s_pixel, t_vector direction, int dep
 
     local_color = 0x000000;
     i = -1;
-    t = INFINITY;
+    t = s_pixel->t_max;
     ////local color
     while (++i < s_pixel->nbr_of_obj)
     {   
@@ -670,7 +650,7 @@ int ft_trace_ray(t_vector position, t_elem *s_pixel, t_vector direction, int dep
         if (s_pixel->arr_object3d[i].type_of_data == 3)
         {
             tmp = ft_intersect_ray_cone(position, s_pixel, direction, i);
-            if (tmp < s_pixel->t_max && tmp >= s_pixel->t_min)
+            if (tmp < t && tmp >= s_pixel->t_min)
             {
                 t_vector vec1 = (position + direction * t) - ((t_cone *)s_pixel->arr_object3d[i].data)->p1;
                 t_vector vec2 = ft_normalize_vector(((t_cone *)s_pixel->arr_object3d[i].data)->p2 - ((t_cone *)s_pixel->arr_object3d[i].data)->p1);
@@ -681,10 +661,11 @@ int ft_trace_ray(t_vector position, t_elem *s_pixel, t_vector direction, int dep
                 s_pixel->normal_now = normal;
                 local_color = s_pixel->arr_object3d[i].color;
                 reflect = s_pixel->arr_object3d[i].reflective;
+                s_pixel->obj_now = i;
             }
         }
     }
-    s_pixel->color_now = local_color;
+    //s_pixel->color_now = local_color;
     if (s_pixel->is_intersect == 0)
         return (local_color);
     //////not reflective or depth <= 0 ====>exit
@@ -694,9 +675,9 @@ int ft_trace_ray(t_vector position, t_elem *s_pixel, t_vector direction, int dep
     /// reflect color
     t_vector r = ft_reflect_ray(-direction, normal);
     s_pixel->t_max = DBL_MAX;
-    s_pixel->t_min = DBL_MIN;
+    s_pixel->t_min = 0.001;//DBL_MIN;
     double reflect_color1 = ft_trace_ray(position + direction * t, s_pixel, r, depth - 1);    
-    return (ft_add_color(ft_change_color(local_color, (1.0 - reflect)), ft_change_color(reflect_color1, (reflect))));
+    return (ft_add_color(ft_change_color(local_color, (1.0 - reflect)), ft_change_color(reflect_color1, reflect)));
 }
 
 unsigned ft_add_color(unsigned color1, unsigned color2)
@@ -821,11 +802,7 @@ void ft_draw_display(t_elem *s_pixel, int x, int y)
         while (++y < HEIGHT)
         {
             direction = ft_canvas_to_viewport(x, y);
-            if (s_pixel->player.rotate-- == 1)
-            {
-                printf("HI\n");;
-                direction *= s_pixel->player.rotation;
-            }
+            direction = ft_rotate_camera(direction, s_pixel);
             color = ft_trace_ray(s_pixel->player.position, s_pixel, direction, s_pixel->depth_recursive);
             if (s_pixel->is_intersect == 1)
             {
@@ -835,10 +812,49 @@ void ft_draw_display(t_elem *s_pixel, int x, int y)
                 s_pixel->is_intersect = 0;
             }
             else
-                ft_pixel_to_image(s_pixel, x, y, 0x000000);
-            
+                ft_pixel_to_image(s_pixel, x, y, 0x000000);   
         }
     }
+    s_pixel->player.rotate_left = 0;
+    s_pixel->player.rotate_right = 0;
+}
+
+t_vector ft_canvas_to_viewport(double x, double y) 
+{
+    t_vector direction;
+
+    direction.x = x / 1000 - 0.5;
+    direction.y = 0.5 + -y / 1000;
+    direction.z = 1;
+    return (direction);
+}
+
+t_vector ft_rotate_camera(t_vector direction, t_elem *s_pixel)
+{
+    double new_x;
+    double new_y;
+    double new_z;
+    double angle1;
+    double angle2;
+
+    angle1 = s_pixel->player.angle_gor / 180.0 * 3.14;
+    angle2 = s_pixel->player.angle_ver / 180.0 * 3.14;
+  
+    //gor
+    new_x = direction.x * cos(angle1) + direction.z * sin(angle1);
+    new_y = direction.y;
+    new_z = -direction.x * sin(angle1) + direction.z * cos(angle1);
+    direction.x = new_x;
+    direction.y = new_y;
+    direction.z = new_z;
+    //ver
+    new_x = direction.x;
+    new_y = direction.y * cos(angle2) + direction.z * sin(angle2);
+    new_z = -direction.y * sin(angle2) + direction.z * cos(angle2);
+    direction.x = new_x;
+    direction.y = new_y;
+    direction.z = new_z;
+    return (direction);
 }
 
 int ft_validate_input(char *line, t_elem *s_pixel)
@@ -862,7 +878,7 @@ int ft_validate_input(char *line, t_elem *s_pixel)
         s_sphere->center.y = s_pixel->player.position.y;
         s_sphere->center.z = s_pixel->player.position.z + 1000;
         s_sphere->radius = 100.0;
-        s_pixel->arr_object3d[i].reflective = 0.6;////////////////////////////
+        s_pixel->arr_object3d[i].reflective = 0.9;////////////////////////////
         s_pixel->arr_object3d[i].specular = 100;
         s_pixel->arr_object3d[i].color = 0x999900;
         s_pixel->arr_object3d[i].type_of_data = 0;
@@ -957,7 +973,7 @@ int ft_validate_input(char *line, t_elem *s_pixel)
         }
         //printf("HI\n");
         s_pixel->arr_light[k].type_of_light = 1;
-        s_pixel->arr_light[k].intensity = 0.7;
+        s_pixel->arr_light[k].intensity = 1.7;
         s_pixel->arr_light[k].position.x = s_pixel->player.position.x;
         s_pixel->arr_light[k].position.y = s_pixel->player.position.y;
         s_pixel->arr_light[k].position.z = s_pixel->player.position.z + 1000;
@@ -973,7 +989,7 @@ int ft_validate_input(char *line, t_elem *s_pixel)
             return (0);
         }
         s_pixel->arr_light[k].type_of_light = 2;
-        s_pixel->arr_light[k].intensity = 1.3;
+        s_pixel->arr_light[k].intensity = 1.7;
         s_pixel->arr_light[k].position.x = 50000;
         s_pixel->arr_light[k].position.y = 50000;
         s_pixel->arr_light[k].position.z = 50000;
@@ -1005,16 +1021,19 @@ void ft_prepare_programm(t_elem *s_pixel)
 	s_pixel->win_ptr = mlx_new_window(s_pixel->mlx_ptr, WIDTH, HEIGHT, "rtv1");
 	s_pixel->img_ptr = mlx_new_image(s_pixel->mlx_ptr, WIDTH, HEIGHT);
 	s_pixel->begin_str = mlx_get_data_addr(s_pixel->img_ptr, &bits_per_pixel, &s_pixel->size_line, &endian);
-    s_pixel->player.position.x = 0;
-    s_pixel->player.position.y = 0;
-    s_pixel->player.position.z = 0;
+    s_pixel->player.position = (t_vector){0, 0, 0};
     s_pixel->is_intersect = 0;
     s_pixel->depth_recursive = 3;
-    s_pixel->player.d = 1000.0;
-    s_pixel->player.rotation = (t_vector){1, cos(5 / 180 * 3.14) + sin(5 / 180 * 3.14), -sin(5 / 180 * 3.14) + cos(5 / 180 * 3.14)};
+    s_pixel->player.angle_gor = 0;
+    s_pixel->player.angle_ver = 0;
+    s_pixel->player.pov = (t_vector){0, 0, 1};
     s_pixel->nbr_of_obj = 0;
     s_pixel->nbr_of_light = 0;
-    s_pixel->player.rotate = 0;
+    s_pixel->player.rotate_right = 0;
+    s_pixel->player.rotate_left = 0;
+    ft_validate_input("add plane", s_pixel);
+    ft_validate_input("add directional light", s_pixel);
+    ft_validate_input("add sphere", s_pixel);
     ft_main_draw(s_pixel);
 }
 
@@ -1024,6 +1043,6 @@ int main(void)
 
 	if (!(s_pixel = (t_elem *)malloc(sizeof(t_elem))))
 		exit(0);
-	ft_prepare_programm(s_pixel);
+    ft_prepare_programm(s_pixel);
 	return (0);
 }
