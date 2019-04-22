@@ -6,7 +6,7 @@
 /*   By: arudyi <arudyi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/28 16:50:17 by arudyi            #+#    #+#             */
-/*   Updated: 2019/04/21 16:41:58 by arudyi           ###   ########.fr       */
+/*   Updated: 2019/04/22 20:14:18 by arudyi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,8 @@
 # include <mlx.h>
 # include <float.h>
 # include "../lib/libft/includes/libft.h"
-# define WIDTH 1000
-# define HEIGHT 1000
+# define WIDTH 1200
+# define HEIGHT 1200
 typedef double	t_vector __attribute__((ext_vector_type(4)));
 
 typedef struct s_plane
@@ -99,11 +99,10 @@ typedef struct		s_elem
 	void			*img_ptr;
 	char			*begin_str;
 	int				size_line;
-    
     double          t_min;
     double          t_max;
     int             depth_recursive;
-    int             color_now;
+    //int             color_now;
     int             obj_now;
     int             is_intersect;
     t_vector        intersect;
