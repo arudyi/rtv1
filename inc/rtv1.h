@@ -6,7 +6,7 @@
 /*   By: arudyi <arudyi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/28 16:50:17 by arudyi            #+#    #+#             */
-/*   Updated: 2019/04/22 20:14:18 by arudyi           ###   ########.fr       */
+/*   Updated: 2019/04/23 19:57:02 by arudyi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,9 @@
 
 # include <stdlib.h>
 # include <math.h>
-# include <mlx.h>
 # include <float.h>
+# include "../frameworks/SDL2/SDL.h"
+# include "../frameworks/SDL2_image.framework/Headers/SDL_image.h"
 # include "../lib/libft/includes/libft.h"
 # define WIDTH 1200
 # define HEIGHT 1200
@@ -94,11 +95,19 @@ typedef struct s_light
 
 typedef struct		s_elem
 {
-	void			*mlx_ptr;
-	void			*win_ptr;
-	void			*img_ptr;
-	char			*begin_str;
-	int				size_line;
+    SDL_Window      *window;
+	SDL_Renderer    *renderrer;
+    SDL_Event       event;
+    SDL_Texture     *texture;
+    SDL_Surface     *surface;
+    SDL_Color       myColor;
+    SDL_Rect        sourceRectangle;
+    SDL_Rect        destinationRectangle;
+    int             is_reflect;
+    int             is_shadow;
+    int             is_specular;
+    char            *text;
+    int             figure_now;
     double          t_min;
     double          t_max;
     int             depth_recursive;
@@ -118,7 +127,7 @@ typedef struct		s_elem
 
 
 
-int					ft_check_key(int key, t_elem *s_pixel);
+void					ft_check_key(t_elem *s_pixel);
 void				ft_main_draw(t_elem *s_pixel);
 int ft_validate_input(char *line, t_elem *s_pixel);
 void ft_refresh(t_elem *s_pixel);
@@ -136,8 +145,11 @@ int ft_lighting(int color, int t, t_elem *s_pixel, t_vector position, t_vector d
 unsigned ft_change_color(unsigned color, double k);
 double ft_vector_len(t_vector vec);
 int ft_is_shadow(t_elem *s_pixel, double t, t_vector direction, int i);
-void ft_change_light(int key, t_elem *s_pixel);
+void ft_change_light(t_elem *s_pixel);
 t_vector ft_reflect_ray(t_vector r, t_vector normal);
 unsigned ft_add_color(unsigned color1, unsigned color2);
 t_vector ft_rotate_camera(t_vector direction, t_elem *s_pixel);
+void ft_image_on_screen(t_elem *s_pixel);
+void mouse_press(t_elem *s_pixel);
+void mouse_release(t_elem *s_pixel);
 #endif
