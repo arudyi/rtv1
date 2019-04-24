@@ -6,7 +6,7 @@
 /*   By: arudyi <arudyi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/28 16:50:13 by arudyi            #+#    #+#             */
-/*   Updated: 2019/04/24 14:17:53 by arudyi           ###   ########.fr       */
+/*   Updated: 2019/04/24 18:25:53 by arudyi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,13 +32,11 @@ t_vector ft_normalize_vector(t_vector vec)
 
 int exit_program(t_elem *s_pixel)
 {
-    //if (s_pixel->texture != NULL)
-        //SDL_DestroyTexture(s_pixel->texture);
     SDL_FreeSurface(s_pixel->surface);
     SDL_DestroyWindow(s_pixel->window);
     SDL_DestroyRenderer(s_pixel->renderrer);
     SDL_Quit();
-	//system("leaks RTv1");
+	system("leaks RTv1");
     exit(1);
     return (0);
 }
@@ -205,7 +203,10 @@ void ft_wait_for_input(t_elem *s_pixel)
 
     res = get_next_line(0, &line);
     if (res == 1)
+    {
         ft_validate_input(line, s_pixel);
+        free(line);
+    }
 }
 
 void ft_change_position(t_elem *s_pixel)
@@ -218,7 +219,7 @@ void ft_change_position(t_elem *s_pixel)
     if (s_pixel->event.key.keysym.sym == SDLK_q)
         s_pixel->player.position.y += 20;//up
     if (s_pixel->event.key.keysym.sym == SDLK_z)
-        s_pixel->player.position.y -= 20;//down
+        s_pixel->player.position.y = (s_pixel->player.position.y <= -200) ? -200 : s_pixel->player.position.y - 20;//down
     if (s_pixel->event.key.keysym.sym == SDLK_w) // forward
     {
         s_pixel->player.position.x = s_pixel->player.position.x + 40 * sin(angle1);
@@ -843,18 +844,22 @@ unsigned ft_change_color(unsigned color, double k)
     return (color);
 }
 
-void ft_draw_display(t_elem *s_pixel)
+void *ft_draw_display(void *data)
 {
+    t_elem *s_pixel = (t_elem *)data;
     t_vector direction;
     int color;
     int x;
     int y;
 
+    if (s_pixel->i == THREADS)
+        s_pixel->i = 0;
     s_pixel->t_max = DBL_MAX;
     s_pixel->t_min = 0;
-    
-    x = -1;
-    while (++x < WIDTH)
+    x = ((WIDTH / THREADS) * s_pixel->i) - 1;
+    int x1 = ((WIDTH / THREADS) * (++s_pixel->i));
+    //printf("from %d to %d\n", x , x1);
+    while (++x < x1)
     {
         y = -1;
         while (++y < HEIGHT)
@@ -875,6 +880,7 @@ void ft_draw_display(t_elem *s_pixel)
     }
     s_pixel->player.rotate_left = 0;
     s_pixel->player.rotate_right = 0;
+    return (0);
 }
 
 t_vector ft_canvas_to_viewport(double x, double y) 
@@ -915,7 +921,7 @@ t_vector ft_rotate_camera(t_vector direction, t_elem *s_pixel)/*nop*/
     return (direction);
 }
 
-int ft_validate_input(char *line, t_elem *s_pixel)/*op*/
+void ft_validate_input(char *line, t_elem *s_pixel)/*op*/
 {
     static int i = 0;
     static int k = 0;
@@ -925,10 +931,7 @@ int ft_validate_input(char *line, t_elem *s_pixel)/*op*/
     t_cylinder *cylinder;
 
     if (s_pixel->nbr_of_obj > 98)
-    {
         write(1, "A lot of objects\n", 17);
-        return (0);
-    }
     else if (ft_strcmp(line, "add sphere") == 0)
     {
         s_sphere = (t_sphere *)malloc(sizeof(t_sphere));
@@ -943,7 +946,6 @@ int ft_validate_input(char *line, t_elem *s_pixel)/*op*/
         s_pixel->arr_object3d[i].data = (t_sphere *)s_sphere;
         s_pixel->nbr_of_obj++;
         i++;
-        return (1);
     }
     else if (ft_strcmp(line, "add cylinder") == 0)
     {
@@ -966,7 +968,6 @@ int ft_validate_input(char *line, t_elem *s_pixel)/*op*/
         s_pixel->arr_object3d[i].data = (t_cylinder *)cylinder;
         s_pixel->nbr_of_obj++;
         i++;
-        return (1);
     }
     else if (ft_strcmp(line, "add plane") == 0)
     {
@@ -984,7 +985,6 @@ int ft_validate_input(char *line, t_elem *s_pixel)/*op*/
         s_pixel->arr_object3d[i].data = (t_plane *)plane;
         s_pixel->nbr_of_obj++;
         i++;
-        return (1);
     }
     else if (ft_strcmp(line, "add cone") == 0)
     {
@@ -1007,28 +1007,20 @@ int ft_validate_input(char *line, t_elem *s_pixel)/*op*/
         s_pixel->arr_object3d[i].type_of_data = 3;
         s_pixel->nbr_of_obj++;
         i++;
-        return (1);
     }
     else if (ft_strcmp(line, "add ambient light") == 0)
     {
         if (k > 8)
-        {
             write(1, "Light max!\n", 11);
-            return (0);
-        }
         s_pixel->arr_light[k].type_of_light = 0;
         s_pixel->arr_light[k].intensity = 0.3;
         s_pixel->nbr_of_light++;
         k++;
-        return (1);
     }
     else if (ft_strcmp(line, "add point light") == 0)
     {
         if (k > 8)
-        {
             write(1, "Light max!\n", 11);
-            return (0);
-        }
         s_pixel->arr_light[k].type_of_light = 1;
         s_pixel->arr_light[k].intensity = 1.0;
         s_pixel->arr_light[k].position.x = s_pixel->player.position.x;
@@ -1036,15 +1028,11 @@ int ft_validate_input(char *line, t_elem *s_pixel)/*op*/
         s_pixel->arr_light[k].position.z = s_pixel->player.position.z + 1000;
         s_pixel->nbr_of_light++;
         k++;
-        return (1);
     }
     else if (ft_strcmp(line, "add directional light") == 0)
     {
         if (k > 8)
-        {
             write(1, "Light max!\n", 11);
-            return (0);
-        }
         s_pixel->arr_light[k].type_of_light = 2;
         s_pixel->arr_light[k].intensity = 1.0;
         s_pixel->arr_light[k].position.x = 50000;
@@ -1052,7 +1040,6 @@ int ft_validate_input(char *line, t_elem *s_pixel)/*op*/
         s_pixel->arr_light[k].position.z = 50000;
         s_pixel->nbr_of_light++;
         k++;
-        return (1);
     }
     else if (ft_strcmp(line, "add shadow") == 0)
         s_pixel->is_shadow = 1;
@@ -1065,8 +1052,39 @@ int ft_validate_input(char *line, t_elem *s_pixel)/*op*/
     else if (ft_strcmp(line, "add specular") == 0)
         s_pixel->is_specular = 1;
     else if (ft_strcmp(line, "delete specular") == 0)
-        s_pixel->is_specular = 0;
-    return (0);
+        s_pixel->is_specular = 0;    
+    ft_validate_light(s_pixel, -1, -1);
+}
+
+void ft_validate_light(t_elem *s_pixel, int i, int k)
+{
+    while (++i < s_pixel->nbr_of_obj)
+    {
+        if (s_pixel->arr_object3d[i].type_of_data == 3)
+        {
+            while (++k < s_pixel->nbr_of_light)
+            {
+                if (s_pixel->arr_light[k].type_of_light == 1)
+                {
+                    if (ft_check_if_equal(s_pixel->arr_light[k].position, ((t_cone *)s_pixel->arr_object3d[i].data)->p1) == 0)
+                    {
+                        s_pixel->arr_light[k].position.x += 1;
+                        s_pixel->arr_light[k].position.y += 1;
+                        s_pixel->arr_light[k].position.z += 1;
+                    }
+                }
+            }
+        }
+    }
+}
+
+int ft_check_if_equal(t_vector vec1, t_vector vec2)
+{
+    if (vec1.x == vec2.x)
+        if (vec1.y == vec2.y)
+            if (vec1.z == vec2.z)
+                return (0);
+    return (1);
 }
 
 void ft_image_on_screen(t_elem *s_pixel)
@@ -1091,15 +1109,18 @@ void ft_image_on_screen(t_elem *s_pixel)
 
 void ft_main_draw(t_elem *s_pixel)
 {
-    int is_running;
+    int i;
+    pthread_t thread[THREADS];
 
-    is_running = 1;
+    i = -1;
+    while (++i < THREADS)
+        pthread_create(&thread[i], NULL, ft_draw_display, (void*)s_pixel);
     while (1)
     {
         if (SDL_PollEvent(&s_pixel->event))
         {
             if (s_pixel->event.type == SDL_QUIT)
-                break ;
+                exit_program(s_pixel);
             else if (s_pixel->event.type == SDL_KEYUP)
                 ft_check_key(s_pixel);
             else if (s_pixel->event.type == SDL_MOUSEBUTTONUP)
@@ -1117,12 +1138,9 @@ void ft_main_draw(t_elem *s_pixel)
             ft_image_on_screen(s_pixel);
         }
     }
-    SDL_FreeSurface(s_pixel->surface);
-    SDL_DestroyWindow(s_pixel->window);
-    SDL_DestroyRenderer(s_pixel->renderrer);
-    SDL_Quit();
-	//system("leaks RTv1");
-    exit(1);
+    i = -1;
+    while (++i < THREADS)
+        pthread_join(thread[i], NULL);
 }
 
 void ft_prepare_programm(t_elem *s_pixel)
@@ -1147,6 +1165,7 @@ void ft_prepare_programm(t_elem *s_pixel)
         s_pixel->surface = SDL_CreateRGBSurface(0, WIDTH, HEIGHT, 32, 0, 0, 0, 0);
         s_pixel->player.position = (t_vector){0, 0, 0};
         s_pixel->is_intersect = 0;
+        s_pixel->i = 0;
         s_pixel->is_shadow = 1;/////0
         s_pixel->is_reflect = 1;/////0
         s_pixel->is_specular = 1;/////0
@@ -1160,7 +1179,7 @@ void ft_prepare_programm(t_elem *s_pixel)
         s_pixel->player.rotate_right = 0;
         s_pixel->player.rotate_left = 0;
         ft_validate_input("add plane", s_pixel);
-        //ft_validate_input("add point light", s_pixel);
+        ft_validate_input("add point light", s_pixel);
         ft_validate_input("add directional light", s_pixel);
         ft_validate_input("add cone", s_pixel);
         //ft_validate_input("add sphere", s_pixel);

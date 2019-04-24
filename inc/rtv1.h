@@ -6,7 +6,7 @@
 /*   By: arudyi <arudyi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/28 16:50:17 by arudyi            #+#    #+#             */
-/*   Updated: 2019/04/24 13:56:59 by arudyi           ###   ########.fr       */
+/*   Updated: 2019/04/24 18:25:41 by arudyi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,11 +16,14 @@
 # include <stdlib.h>
 # include <math.h>
 # include <float.h>
+# include <pthread.h>
 # include "../frameworks/SDL2/SDL.h"
+# include "../frameworks/SDL2/SDL_thread.h"
 # include "../frameworks/SDL2_image.framework/Headers/SDL_image.h"
 # include "../lib/libft/includes/libft.h"
-# define WIDTH 1200
-# define HEIGHT 1200
+# define WIDTH 1000
+# define HEIGHT 1000
+# define THREADS 20
 typedef double	t_vector __attribute__((ext_vector_type(4)));
 
 typedef struct s_plane
@@ -106,6 +109,7 @@ typedef struct		s_elem
     int             figure_now;
     double          t_min;
     double          t_max;
+    int             i;
     int             depth_recursive;
     //int             color_now;
     int             obj_now;
@@ -125,7 +129,7 @@ typedef struct		s_elem
 
 void					ft_check_key(t_elem *s_pixel);
 void				ft_main_draw(t_elem *s_pixel);
-int ft_validate_input(char *line, t_elem *s_pixel);
+void ft_validate_input(char *line, t_elem *s_pixel);
 void ft_refresh(t_elem *s_pixel);
 t_vector ft_canvas_to_viewport(double x, double y);
 double ft_intersect_ray_sphere(t_vector position, t_elem *s_pixel, t_vector direction, int i);
@@ -148,4 +152,6 @@ t_vector ft_rotate_camera(t_vector direction, t_elem *s_pixel);
 void ft_image_on_screen(t_elem *s_pixel);
 void mouse_press(t_elem *s_pixel);
 void mouse_release(t_elem *s_pixel);
+void ft_validate_light(t_elem *s_pixel, int i, int k);
+int ft_check_if_equal(t_vector vec1, t_vector vec2);
 #endif
