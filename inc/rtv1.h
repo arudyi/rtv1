@@ -6,7 +6,7 @@
 /*   By: arudyi <arudyi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/28 16:50:17 by arudyi            #+#    #+#             */
-/*   Updated: 2019/04/23 19:57:02 by arudyi           ###   ########.fr       */
+/*   Updated: 2019/04/24 13:56:59 by arudyi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,11 +98,7 @@ typedef struct		s_elem
     SDL_Window      *window;
 	SDL_Renderer    *renderrer;
     SDL_Event       event;
-    SDL_Texture     *texture;
     SDL_Surface     *surface;
-    SDL_Color       myColor;
-    SDL_Rect        sourceRectangle;
-    SDL_Rect        destinationRectangle;
     int             is_reflect;
     int             is_shadow;
     int             is_specular;
