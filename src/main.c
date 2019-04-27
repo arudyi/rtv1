@@ -6,7 +6,7 @@
 /*   By: arudyi <arudyi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/28 16:50:13 by arudyi            #+#    #+#             */
-/*   Updated: 2019/04/24 18:25:53 by arudyi           ###   ########.fr       */
+/*   Updated: 2019/04/27 19:32:14 by arudyi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,6 +125,18 @@ int ft_get_object(t_elem *s_pixel, int x, int y)
     {
         direction = ft_canvas_to_viewport(x, y);
         direction = ft_rotate_camera(direction, s_pixel);
+        if (s_pixel->arr_object3d[i].type_of_data == 2)
+        {
+            if ((tmp = ft_intersect_ray_plane(s_pixel->player.position, s_pixel, direction, i)) > 0)
+            {
+                if (tmp < t && tmp >= 0)
+                {
+                    t = tmp;
+                    s_pixel->is_intersect = 1;
+                    k = i;
+                }
+            }
+        }
         if (s_pixel->arr_object3d[i].type_of_data == 0)
         {
             if ((tmp = ft_intersect_ray_sphere(s_pixel->player.position, s_pixel, direction, i)) > 0)
@@ -179,6 +191,11 @@ void ft_mouse_move(t_elem *s_pixel)
             ((t_sphere *)s_pixel->arr_object3d[i].data)->center.x += s_pixel->event.motion.xrel;
             ((t_sphere *)s_pixel->arr_object3d[i].data)->center.y -= s_pixel->event.motion.yrel;
         }
+        if (s_pixel->arr_object3d[i].type_of_data == 2)
+        {
+            ((t_plane *)s_pixel->arr_object3d[i].data)->point.y -= s_pixel->event.motion.yrel;
+            ((t_plane *)s_pixel->arr_object3d[i].data)->normal.y -= s_pixel->event.motion.yrel;
+        }
         if (s_pixel->arr_object3d[i].type_of_data == 1)
         {
             ((t_cylinder *)s_pixel->arr_object3d[i].data)->p1.x += s_pixel->event.motion.xrel;
@@ -219,7 +236,7 @@ void ft_change_position(t_elem *s_pixel)
     if (s_pixel->event.key.keysym.sym == SDLK_q)
         s_pixel->player.position.y += 20;//up
     if (s_pixel->event.key.keysym.sym == SDLK_z)
-        s_pixel->player.position.y = (s_pixel->player.position.y <= -200) ? -200 : s_pixel->player.position.y - 20;//down
+        s_pixel->player.position.y -= 20;//down
     if (s_pixel->event.key.keysym.sym == SDLK_w) // forward
     {
         s_pixel->player.position.x = s_pixel->player.position.x + 40 * sin(angle1);
@@ -244,8 +261,8 @@ void ft_change_position(t_elem *s_pixel)
 
 void ft_change_object(t_elem *s_pixel)
 {
-    static double angle_x = 0;
-    static double angle_z = 0;
+    double angle_x = 0;
+    double angle_z = 0;
     int i;
     double new_x;
     double new_y;
@@ -256,37 +273,40 @@ void ft_change_object(t_elem *s_pixel)
     {
         if (s_pixel->event.key.keysym.sym == SDLK_UP || s_pixel->event.key.keysym.sym == SDLK_DOWN)
         {
+            if (s_pixel->event.key.keysym.sym == SDLK_UP)
+                angle_x = 1.0;
+            else
+                angle_x = -1.0;
             if (s_pixel->arr_object3d[i].type_of_data == 1)
             {
-                if (s_pixel->event.key.keysym.sym == SDLK_UP)
-                    angle_x = (angle_x >= 360) ? 0 : angle_x + 10.0;
-                else
-                    angle_x = (angle_x <= 0 ) ? 360 : angle_x - 10.0;
                 new_y = ((t_cylinder *)s_pixel->arr_object3d[i].data)->p2.y * cos(angle_x / 180 * 3.14) + ((t_cylinder *)s_pixel->arr_object3d[i].data)->p2.z * sin(angle_x / 180 * 3.14);
-                new_z = ((t_cylinder *)s_pixel->arr_object3d[i].data)->p2.y * sin(angle_x / 180 * 3.14) + ((t_cylinder *)s_pixel->arr_object3d[i].data)->p2.z * cos(angle_x / 180 * 3.14);
+                new_z = -((t_cylinder *)s_pixel->arr_object3d[i].data)->p2.y * sin(angle_x / 180 * 3.14) + ((t_cylinder *)s_pixel->arr_object3d[i].data)->p2.z * cos(angle_x / 180 * 3.14);
                 ((t_cylinder *)s_pixel->arr_object3d[i].data)->p2.y = new_y;
                 ((t_cylinder *)s_pixel->arr_object3d[i].data)->p2.z = new_z;
             }
             else if (s_pixel->arr_object3d[i].type_of_data == 3)
             {
-                if (s_pixel->event.key.keysym.sym == SDLK_UP)
-                    angle_x = (angle_x >= 358) ? 0 : angle_x + 2.0;
-                else
-                    angle_x = (angle_x <= 0 ) ? 360 : angle_x - 2.0;
                 new_y = ((t_cone *)s_pixel->arr_object3d[i].data)->p2.y * cos(angle_x / 180 * 3.14) + ((t_cone *)s_pixel->arr_object3d[i].data)->p2.z * sin(angle_x / 180 * 3.14);
-                new_z = ((t_cone *)s_pixel->arr_object3d[i].data)->p2.y * sin(angle_x / 180 * 3.14) + ((t_cone *)s_pixel->arr_object3d[i].data)->p2.z * cos(angle_x / 180 * 3.14);
+                new_z = -((t_cone *)s_pixel->arr_object3d[i].data)->p2.y * sin(angle_x / 180 * 3.14) + ((t_cone *)s_pixel->arr_object3d[i].data)->p2.z * cos(angle_x / 180 * 3.14);
                 ((t_cone *)s_pixel->arr_object3d[i].data)->p2.y = new_y;
                 ((t_cone *)s_pixel->arr_object3d[i].data)->p2.z = new_z;
+            }
+            else if (s_pixel->arr_object3d[i].type_of_data == 2)
+            {
+                new_y = ((t_plane *)s_pixel->arr_object3d[i].data)->normal.y * cos(angle_x / 180 * 3.14) + ((t_plane *)s_pixel->arr_object3d[i].data)->normal.z * sin(angle_x / 180 * 3.14);
+                new_z = -((t_plane *)s_pixel->arr_object3d[i].data)->normal.y * sin(angle_x / 180 * 3.14) + ((t_plane *)s_pixel->arr_object3d[i].data)->normal.z * cos(angle_x / 180 * 3.14);
+                ((t_plane *)s_pixel->arr_object3d[i].data)->normal.y = new_y;
+                ((t_plane *)s_pixel->arr_object3d[i].data)->normal.z = new_z;
             }
         }
         else if (s_pixel->event.key.keysym.sym == SDLK_LEFT || s_pixel->event.key.keysym.sym == SDLK_RIGHT)
         {
+            if (s_pixel->event.key.keysym.sym == SDLK_LEFT)
+                angle_z = 1.0;
+            else
+                angle_z = -1.0;
             if (s_pixel->arr_object3d[i].type_of_data == 1)
             {
-                if (s_pixel->event.key.keysym.sym == SDLK_LEFT)
-                    angle_z = (angle_z >= 360) ? 0 : angle_z + 10.0;
-                else
-                    angle_z = (angle_z <= 0 ) ? 360 : angle_z - 10.0;
                 new_x = ((t_cylinder *)s_pixel->arr_object3d[i].data)->p2.x * cos(angle_z / 180 * 3.14) + ((t_cylinder *)s_pixel->arr_object3d[i].data)->p2.y * sin(angle_z / 180 * 3.14);
                 new_y = -((t_cylinder *)s_pixel->arr_object3d[i].data)->p2.x * sin(angle_z / 180 * 3.14) + ((t_cylinder *)s_pixel->arr_object3d[i].data)->p2.y * cos(angle_z / 180 * 3.14);
                 ((t_cylinder *)s_pixel->arr_object3d[i].data)->p2.x = new_x;
@@ -295,14 +315,17 @@ void ft_change_object(t_elem *s_pixel)
             }
             if (s_pixel->arr_object3d[i].type_of_data == 3)
             {
-                if (s_pixel->event.key.keysym.sym == SDLK_LEFT)
-                    angle_z = (angle_z >= 360) ? 0 : angle_z + 10.0;
-                else
-                    angle_z = (angle_z <= 0 ) ? 360 : angle_z - 10.0;
                 new_x = ((t_cone *)s_pixel->arr_object3d[i].data)->p2.x * cos(angle_z / 180 * 3.14) + ((t_cone *)s_pixel->arr_object3d[i].data)->p2.y * sin(angle_z / 180 * 3.14);
                 new_y = -((t_cone *)s_pixel->arr_object3d[i].data)->p2.x * sin(angle_z / 180 * 3.14) + ((t_cone *)s_pixel->arr_object3d[i].data)->p2.y * cos(angle_z / 180 * 3.14);
                 ((t_cone *)s_pixel->arr_object3d[i].data)->p2.x = new_x;
                 ((t_cone *)s_pixel->arr_object3d[i].data)->p2.y = new_y;
+            }
+            if (s_pixel->arr_object3d[i].type_of_data == 2)
+            {
+                new_x = ((t_plane *)s_pixel->arr_object3d[i].data)->normal.x * cos(angle_z / 180 * 3.14) + ((t_plane *)s_pixel->arr_object3d[i].data)->normal.y * sin(angle_z / 180 * 3.14);
+                new_y = -((t_plane *)s_pixel->arr_object3d[i].data)->normal.x * sin(angle_z / 180 * 3.14) + ((t_plane *)s_pixel->arr_object3d[i].data)->normal.y * cos(angle_z / 180 * 3.14);
+                ((t_plane *)s_pixel->arr_object3d[i].data)->normal.x = new_x;
+                ((t_plane *)s_pixel->arr_object3d[i].data)->normal.y = new_y;
             
             }
         }
@@ -384,20 +407,65 @@ void ft_change_reflective(t_elem *s_pixel)
     }
 }
 
+void ft_change_obj_size(t_elem *s_pixel)
+{
+    int i;
+
+    i = s_pixel->figure_now;
+    if (i > -1)
+    {
+        if (s_pixel->arr_object3d[i].type_of_data == 0)
+        {
+            if (s_pixel->event.key.keysym.sym == SDLK_KP_PLUS)
+                ((t_sphere *)s_pixel->arr_object3d[i].data)->radius += 10;
+            else
+                ((t_sphere *)s_pixel->arr_object3d[i].data)->radius -= 10;
+            if (((t_sphere *)s_pixel->arr_object3d[i].data)->radius < 10)
+                ((t_sphere *)s_pixel->arr_object3d[i].data)->radius += 10;
+            if (((t_sphere *)s_pixel->arr_object3d[i].data)->radius > 300)
+                ((t_sphere *)s_pixel->arr_object3d[i].data)->radius -= 10;
+        }
+        else if (s_pixel->arr_object3d[i].type_of_data == 1)
+        {
+            if (s_pixel->event.key.keysym.sym == SDLK_KP_PLUS)
+                ((t_cylinder *)s_pixel->arr_object3d[i].data)->height += 10;
+            else
+                ((t_cylinder *)s_pixel->arr_object3d[i].data)->height -= 10;
+            if (((t_cylinder *)s_pixel->arr_object3d[i].data)->height < 10)
+                ((t_cylinder *)s_pixel->arr_object3d[i].data)->height += 10;
+            if (((t_cylinder *)s_pixel->arr_object3d[i].data)->height > 700)
+                ((t_cylinder *)s_pixel->arr_object3d[i].data)->height -= 10;
+        }
+        else if (s_pixel->arr_object3d[i].type_of_data == 3)
+        {
+            if (s_pixel->event.key.keysym.sym == SDLK_KP_PLUS)
+                ((t_cone *)s_pixel->arr_object3d[i].data)->height += 10;
+            else
+                ((t_cone *)s_pixel->arr_object3d[i].data)->height -= 10;
+            if (((t_cone *)s_pixel->arr_object3d[i].data)->height < 10)
+                ((t_cone *)s_pixel->arr_object3d[i].data)->height += 10;
+            if (((t_cone *)s_pixel->arr_object3d[i].data)->height > 700)
+                ((t_cone *)s_pixel->arr_object3d[i].data)->height -= 10;
+        }
+    }
+}
+
 void	ft_check_key(t_elem *s_pixel)
 {
 	if (s_pixel->event.key.keysym.sym == SDLK_ESCAPE)
 		exit_program(s_pixel);
-    if (s_pixel->event.key.keysym.sym == SDLK_BACKSPACE)
+    else if (s_pixel->event.key.keysym.sym == SDLK_BACKSPACE)
         ft_wait_for_input(s_pixel);
-    if (s_pixel->event.key.keysym.sym == SDLK_DOWN || s_pixel->event.key.keysym.sym == SDLK_UP || s_pixel->event.key.keysym.sym == SDLK_LEFT || s_pixel->event.key.keysym.sym == SDLK_RIGHT)
+    else if (s_pixel->event.key.keysym.sym == SDLK_DOWN || s_pixel->event.key.keysym.sym == SDLK_UP || s_pixel->event.key.keysym.sym == SDLK_LEFT || s_pixel->event.key.keysym.sym == SDLK_RIGHT)
         ft_change_object(s_pixel);
-    if (s_pixel->event.key.keysym.sym == SDLK_1 || s_pixel->event.key.keysym.sym == SDLK_2)
+    else if (s_pixel->event.key.keysym.sym == SDLK_1 || s_pixel->event.key.keysym.sym == SDLK_2)
         ft_change_light(s_pixel);
-    if (s_pixel->event.key.keysym.sym == SDLK_3 || s_pixel->event.key.keysym.sym == SDLK_4)
+    else if (s_pixel->event.key.keysym.sym == SDLK_3 || s_pixel->event.key.keysym.sym == SDLK_4)
         ft_change_specular(s_pixel);
-    if (s_pixel->event.key.keysym.sym == SDLK_5 || s_pixel->event.key.keysym.sym == SDLK_6)
+    else if (s_pixel->event.key.keysym.sym == SDLK_5 || s_pixel->event.key.keysym.sym == SDLK_6)
         ft_change_reflective(s_pixel);
+    else if (s_pixel->event.key.keysym.sym == SDLK_KP_PLUS || s_pixel->event.key.keysym.sym == SDLK_KP_MINUS)
+        ft_change_obj_size(s_pixel);
     else
         ft_change_position(s_pixel);
 }
@@ -463,14 +531,20 @@ double ft_intersect_ray_plane(t_vector position, t_elem *s_pixel, t_vector direc
     t_vector normal;
     double k1;
     double k2;
+    double result;
 
     x = position - ((t_plane *)s_pixel->arr_object3d[i].data)->point;
     normal = ft_normalize_vector(((t_plane *)s_pixel->arr_object3d[i].data)->normal - ((t_plane *)s_pixel->arr_object3d[i].data)->point);
+    
     k1 = ft_dot_product(-x, normal);
     k2 = ft_dot_product(direction, normal);
+    
     if (k2 == 0)
         return (-1);
-    return (k1 / k2);
+    result = k1 / k2;
+    if ((ft_dot_product(direction, normal) * ft_dot_product(x, normal)) > 0)
+        return (-1);
+    return (result);
 }
 
 double ft_intersect_ray_cone(t_vector position, t_elem *s_pixel, t_vector direction, int i)
@@ -488,7 +562,6 @@ double ft_intersect_ray_cone(t_vector position, t_elem *s_pixel, t_vector direct
     t_vector v;
     
     v = ft_normalize_vector(((t_cone *)s_pixel->arr_object3d[i].data)->p2 - ((t_cone *)s_pixel->arr_object3d[i].data)->p1); // v axis unit_vector
-    //direction = ft_normalize_vector(direction);
     x = position - ((t_cone *)s_pixel->arr_object3d[i].data)->p1;
 
     k = tan(((t_cone *)s_pixel->arr_object3d[i].data)->angle / 2.0 / 180.0 * 3.14);
@@ -504,33 +577,29 @@ double ft_intersect_ray_cone(t_vector position, t_elem *s_pixel, t_vector direct
     t1 = (-b + sqrt(discriminant)) / (2 * a);
     t2 = (-b - sqrt(discriminant)) / (2 * a);
    
-    m1 = ft_dot_product((position + direction * t1) - ((t_cone *)s_pixel->arr_object3d[i].data)->p1, v);//projection on axis
+    m1 = ft_dot_product((position + direction * t1) - ((t_cone *)s_pixel->arr_object3d[i].data)->p1, v);
     m2 = ft_dot_product((position + direction * t2) - ((t_cone *)s_pixel->arr_object3d[i].data)->p1, v);
     if (t1 >= 0 && t2 >= 0)
     {
-        if (t1 <= t2)
-            if (0 < m1 && m1 <=  ((t_cone *)s_pixel->arr_object3d[i].data)->height)
+        if (t1 < t2)
+            if (0 <= m1 && m1 <= ((t_cone *)s_pixel->arr_object3d[i].data)->height)
                 return (t1);
-        if (t2 < t1)
-            if (0 < m2 && m2 <= ((t_cone *)s_pixel->arr_object3d[i].data)->height)
-                return (t2);
+        if (0 <= m2 && m2 <= ((t_cone *)s_pixel->arr_object3d[i].data)->height)
+            return (t2);
     }
     else
     {
         if (t1 >= 0 && t2 < 0)
-            if (0 < m1 && m1 <= ((t_cone *)s_pixel->arr_object3d[i].data)->height)
+            if (0 <= m1 && m1 <= ((t_cone *)s_pixel->arr_object3d[i].data)->height)
                 return (t1);
-        if (t1 < 0 && t2 >= 0)
-            if (0 < m2 && m2 <= ((t_cone *)s_pixel->arr_object3d[i].data)->height)
-                return (t2);
+        if (0 <= m2 && m2 <= ((t_cone *)s_pixel->arr_object3d[i].data)->height)
+            return (t2);
     }
     return (-1);
 }
 
 double ft_intersect_ray_cylinder(t_vector position, t_elem *s_pixel, t_vector direction, int i)
 {
-    double kx;
-    double kz;
     double t1;
     double t2;
     double a;
@@ -544,40 +613,37 @@ double ft_intersect_ray_cylinder(t_vector position, t_elem *s_pixel, t_vector di
     t_vector x;
  
     radius = ((t_cylinder *)s_pixel->arr_object3d[i].data)->radius;
-    v = ft_normalize_vector(((t_cylinder *)s_pixel->arr_object3d[i].data)->p1 - ((t_cylinder *)s_pixel->arr_object3d[i].data)->p2);
+    v = ft_normalize_vector(((t_cylinder *)s_pixel->arr_object3d[i].data)->p2 - ((t_cylinder *)s_pixel->arr_object3d[i].data)->p1);
     x = position - ((t_cylinder *)s_pixel->arr_object3d[i].data)->p1;
-    kx = position.x - ((t_cylinder *)s_pixel->arr_object3d[i].data)->p1.x;
-    kz = position.z - ((t_cylinder *)s_pixel->arr_object3d[i].data)->p1.z;
-    a = direction.x * direction.x + direction.z * direction.z;
-    b = (direction.x) * kx + (direction.z) * kz;
-    b = b * 2;
-    c = pow(kx, 2) + pow(kz, 2) - pow(radius, 2);
+
+    a = ft_dot_product(direction, direction) - pow(ft_dot_product(direction, v), 2);
+    b = 2.0 * (ft_dot_product(direction, x) - ft_dot_product(direction, v) * ft_dot_product(x, v));
+    c = ft_dot_product(x, x) - pow(ft_dot_product(x, v), 2) - pow(radius, 2);
+    
     discriminant = b * b - 4 * a * c;
     if (discriminant < 0)
         return (-1);
     t1 = (-b + sqrt(discriminant)) / (2 * a);
     t2 = (-b - sqrt(discriminant)) / (2 * a);
 
-    m1 = ft_dot_product(direction, v) * t1 + ft_dot_product(x, v);
-    m2 = ft_dot_product(direction, v) * t2 + ft_dot_product(x, v);
+    m1 = ft_dot_product((position + direction * t1) - ((t_cylinder *)s_pixel->arr_object3d[i].data)->p1, v);
+    m2 = ft_dot_product((position + direction * t2) - ((t_cylinder *)s_pixel->arr_object3d[i].data)->p1, v);
 
     if (t1 >= 0 && t2 >= 0)
     {
         if (t1 <= t2)
             if (0 <= m1 && m1 <= ((t_cylinder *)s_pixel->arr_object3d[i].data)->height)
                 return (t1);
-        if (t2 < t1)
-            if (0 <= m2 && m2 <= ((t_cylinder *)s_pixel->arr_object3d[i].data)->height)
-                return (t2);
+        if (0 <= m2 && m2 <= ((t_cylinder *)s_pixel->arr_object3d[i].data)->height)
+            return (t2);
     }
     else
     {
         if (t1 >= 0 && t2 < 0)
             if (0 <= m1 && m1 <= ((t_cylinder *)s_pixel->arr_object3d[i].data)->height)
                 return (t1);
-        if (t1 < 0 && t2 >= 0)
-            if (0 <= m2 && m2 <= ((t_cylinder *)s_pixel->arr_object3d[i].data)->height)
-                return (t2);
+        if (0 <= m2 && m2 <= ((t_cylinder *)s_pixel->arr_object3d[i].data)->height)
+            return (t2);
     }
     return (-1);
 }
@@ -594,7 +660,7 @@ int ft_is_shadow(t_elem *s_pixel, double t, t_vector direction, int i)
     if (s_pixel->arr_light[i].type_of_light == 1)
     {   
         ray_light = s_pixel->arr_light[i].position - position;
-        t_max = ft_vector_len(ray_light);
+        t_max = 1;
     }
     else if (s_pixel->arr_light[i].type_of_light == 2)
     {
@@ -607,25 +673,25 @@ int ft_is_shadow(t_elem *s_pixel, double t, t_vector direction, int i)
         if (s_pixel->arr_object3d[k].type_of_data == 0)
         {
             tmp = ft_intersect_ray_sphere(position, s_pixel, ray_light, k);
-            if (tmp < t_max && tmp >= DBL_MIN)
+            if (tmp < t_max && tmp >= 0.00001)
                 return (1);//shadow
         }
         else if (s_pixel->arr_object3d[k].type_of_data == 1)
         {
             tmp = ft_intersect_ray_cylinder(position, s_pixel, ray_light, k);
-            if (tmp < t_max && tmp >= DBL_MIN)
+            if (tmp < t_max && tmp >= 0.00001)
                 return (1);//shadow
         }
         else if (s_pixel->arr_object3d[k].type_of_data == 2)
         {
             tmp = ft_intersect_ray_plane(position, s_pixel, ray_light, k);
-            if (tmp < t_max && tmp >= DBL_MIN)
+            if (tmp < t_max && tmp >= 0.00001)
                 return (1);//shadow
         }
         else if (s_pixel->arr_object3d[k].type_of_data == 3)
         {
             tmp = ft_intersect_ray_cone(position, s_pixel, ray_light, k);
-            if (tmp < t_max && tmp >= DBL_MIN)
+            if (tmp < t_max && tmp >= 0.00001)
                 return (1);//shadow
         }
     }
@@ -677,7 +743,7 @@ int ft_trace_ray(t_vector position, t_elem *s_pixel, t_vector direction, int dep
                 t = tmp;
                 t_vector vec = ft_normalize_vector(((t_cylinder *)s_pixel->arr_object3d[i].data)->p2 - ((t_cylinder *)s_pixel->arr_object3d[i].data)->p1);
                 m = ft_dot_product((position + direction * t) - ((t_cylinder *)s_pixel->arr_object3d[i].data)->p1, vec);
-                normal = ft_normalize_vector(((position + direction * t) - ((t_cylinder *)s_pixel->arr_object3d[i].data)->p1 - (vec * m)));//////////////
+                normal = ft_normalize_vector( (position + direction * t) - ((t_cylinder *)s_pixel->arr_object3d[i].data)->p1 - (vec * m) );//////////////
                 s_pixel->normal_now = normal;
                 s_pixel->is_intersect = 1;
                 local_color = s_pixel->arr_object3d[i].color;
@@ -690,10 +756,11 @@ int ft_trace_ray(t_vector position, t_elem *s_pixel, t_vector direction, int dep
             tmp = ft_intersect_ray_plane(position, s_pixel, direction, i);
             if (tmp < t && tmp >= s_pixel->t_min)
             {
-                //printf("plane = %f\n", tmp);
                 t = tmp;
-                normal = ft_normalize_vector((position + direction * t) + (((t_plane *)s_pixel->arr_object3d[i].data)->normal));
-                s_pixel->normal_now = normal;
+                normal = (position + direction * t) + ( ((t_plane *)s_pixel->arr_object3d[i].data)->normal - ((t_plane *)s_pixel->arr_object3d[i].data)->point);
+                /*if (ft_dot_product(direction, ((t_plane *)s_pixel->arr_object3d[i].data)->normal) < 0)
+                    normal *= -1;*/
+                s_pixel->normal_now = ft_normalize_vector(normal);
                 s_pixel->is_intersect = 1;
                 local_color = s_pixel->arr_object3d[i].color;
                 reflect = s_pixel->arr_object3d[i].reflective;
@@ -718,11 +785,10 @@ int ft_trace_ray(t_vector position, t_elem *s_pixel, t_vector direction, int dep
             }
         }
     }
-    //s_pixel->color_now = local_color;
     if (s_pixel->is_intersect == 0)
         return (local_color);
     //////not reflective or depth <= 0 ====>exit
-    local_color = ft_lighting(local_color, t, s_pixel, position + direction * t, direction);
+    local_color = ft_lighting(local_color, t, s_pixel, direction);
     if (depth < 0 || reflect < 0.0)
         return (local_color);
     /// reflect color
@@ -766,7 +832,7 @@ unsigned ft_add_color(unsigned color1, unsigned color2)
     return (new_color);
 }
 
-int ft_lighting(int color, int t, t_elem *s_pixel, t_vector position, t_vector direction)
+int ft_lighting(int color, int t, t_elem *s_pixel, t_vector direction)
 {
     int i;
     double k;
@@ -786,7 +852,7 @@ int ft_lighting(int color, int t, t_elem *s_pixel, t_vector position, t_vector d
         else
         {
             if (s_pixel->arr_light[i].type_of_light == 1)
-                ray_light = s_pixel->arr_light[i].position - position;
+                ray_light = s_pixel->arr_light[i].position - (s_pixel->player.position + direction * t);
             else
                 ray_light = s_pixel->arr_light[i].position;
             //////shadow
@@ -795,12 +861,12 @@ int ft_lighting(int color, int t, t_elem *s_pixel, t_vector position, t_vector d
                     continue ;
             /////////Diffuse
             n_dot_l = ft_dot_product(normal, ray_light);
-            if (n_dot_l > 0)//> 0
+            if (n_dot_l >= 0)//> 0
                 k += s_pixel->arr_light[i].intensity * n_dot_l / ft_vector_len(ray_light);
             //specular
             if (s_pixel->arr_object3d[s_pixel->obj_now].specular > 0 && s_pixel->is_specular == 1)
             {
-                r = 2 * normal * ft_dot_product(normal, ray_light) - ray_light;
+                r = 2.0 * normal * ft_dot_product(normal, ray_light) - ray_light;
                 r_dot_v = ft_dot_product(r, -direction);
                 if (r_dot_v > 0)
                 {
@@ -858,7 +924,6 @@ void *ft_draw_display(void *data)
     s_pixel->t_min = 0;
     x = ((WIDTH / THREADS) * s_pixel->i) - 1;
     int x1 = ((WIDTH / THREADS) * (++s_pixel->i));
-    //printf("from %d to %d\n", x , x1);
     while (++x < x1)
     {
         y = -1;
@@ -921,7 +986,7 @@ t_vector ft_rotate_camera(t_vector direction, t_elem *s_pixel)/*nop*/
     return (direction);
 }
 
-void ft_validate_input(char *line, t_elem *s_pixel)/*op*/
+void ft_validate_input(char *line, t_elem *s_pixel)
 {
     static int i = 0;
     static int k = 0;
@@ -935,11 +1000,11 @@ void ft_validate_input(char *line, t_elem *s_pixel)/*op*/
     else if (ft_strcmp(line, "add sphere") == 0)
     {
         s_sphere = (t_sphere *)malloc(sizeof(t_sphere));
-        s_sphere->center.x = s_pixel->player.position.x;
+        s_sphere->center.x = s_pixel->player.position.x + 200;
         s_sphere->center.y = s_pixel->player.position.y;
         s_sphere->center.z = s_pixel->player.position.z + 1000;
         s_sphere->radius = 100.0;
-        s_pixel->arr_object3d[i].reflective = 0.5;////////////////////////////
+        s_pixel->arr_object3d[i].reflective = 0.0;////////////////////////////
         s_pixel->arr_object3d[i].specular = 100;
         s_pixel->arr_object3d[i].color = 0x999900;
         s_pixel->arr_object3d[i].type_of_data = 0;
@@ -952,11 +1017,11 @@ void ft_validate_input(char *line, t_elem *s_pixel)/*op*/
         cylinder = (t_cylinder *)malloc(sizeof(t_cylinder));
         
         cylinder->p1.x = s_pixel->player.position.x;
-        cylinder->p1.y = s_pixel->player.position.y - 300;
+        cylinder->p1.y = s_pixel->player.position.y;
         cylinder->p1.z = s_pixel->player.position.z + 1000;
 
         cylinder->p2.x = s_pixel->player.position.x;
-        cylinder->p2.y = s_pixel->player.position.y - 301;
+        cylinder->p2.y = s_pixel->player.position.y - 100;
         cylinder->p2.z = s_pixel->player.position.z + 1000;
 
         cylinder->radius = 50;
@@ -972,14 +1037,14 @@ void ft_validate_input(char *line, t_elem *s_pixel)/*op*/
     else if (ft_strcmp(line, "add plane") == 0)
     {
         plane = (t_plane *)malloc(sizeof(t_plane));
-        plane->point.x = 0;
-        plane->point.y = -300; 
-        plane->point.z = 1000;
-        plane->normal.x = 0;
-        plane->normal.y = -299;
-        plane->normal.z = 1000;
-        s_pixel->arr_object3d[i].reflective = 0.5;
-        s_pixel->arr_object3d[i].specular = 100; // 200
+        plane->point.x = s_pixel->player.position.x;
+        plane->point.y = s_pixel->player.position.y - 300; 
+        plane->point.z = s_pixel->player.position.z + 1000;
+        plane->normal.x = s_pixel->player.position.x;
+        plane->normal.y = s_pixel->player.position.y - 299;
+        plane->normal.z = s_pixel->player.position.x + 1000;
+        s_pixel->arr_object3d[i].reflective = 0;
+        s_pixel->arr_object3d[i].specular = -1; // 200
         s_pixel->arr_object3d[i].color = 0x999999;
         s_pixel->arr_object3d[i].type_of_data = 2;
         s_pixel->arr_object3d[i].data = (t_plane *)plane;
@@ -995,7 +1060,7 @@ void ft_validate_input(char *line, t_elem *s_pixel)/*op*/
         cone->p1.z = s_pixel->player.position.z + 1000;
 
         cone->p2.x = s_pixel->player.position.x;
-        cone->p2.y = s_pixel->player.position.y - 1;
+        cone->p2.y = s_pixel->player.position.y - 100;
         cone->p2.z = s_pixel->player.position.z + 1000;
     
         cone->height = 250;
@@ -1149,7 +1214,7 @@ void ft_prepare_programm(t_elem *s_pixel)
     s_pixel->renderrer = 0;
     if (SDL_Init(SDL_INIT_EVERYTHING) >= 0)
     {
-        s_pixel->window = SDL_CreateWindow("RTv1", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH + 500, HEIGHT, 0);
+        s_pixel->window = SDL_CreateWindow("RTv1", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH, HEIGHT, 0);
         if (s_pixel->window == 0)
         {
             SDL_Quit();
@@ -1180,9 +1245,9 @@ void ft_prepare_programm(t_elem *s_pixel)
         s_pixel->player.rotate_left = 0;
         ft_validate_input("add plane", s_pixel);
         ft_validate_input("add point light", s_pixel);
-        ft_validate_input("add directional light", s_pixel);
-        ft_validate_input("add cone", s_pixel);
-        //ft_validate_input("add sphere", s_pixel);
+        //ft_validate_input("add directional light", s_pixel);
+        //ft_validate_input("add cone", s_pixel);
+        ft_validate_input("add sphere", s_pixel);
         //ft_validate_input("add cylinder", s_pixel);
     }
     else

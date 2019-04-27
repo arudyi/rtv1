@@ -6,7 +6,7 @@
 /*   By: arudyi <arudyi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/28 16:50:17 by arudyi            #+#    #+#             */
-/*   Updated: 2019/04/24 18:25:41 by arudyi           ###   ########.fr       */
+/*   Updated: 2019/04/27 19:03:11 by arudyi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,31 +127,32 @@ typedef struct		s_elem
 
 
 
-void					ft_check_key(t_elem *s_pixel);
-void				ft_main_draw(t_elem *s_pixel);
-void ft_validate_input(char *line, t_elem *s_pixel);
-void ft_refresh(t_elem *s_pixel);
-t_vector ft_canvas_to_viewport(double x, double y);
-double ft_intersect_ray_sphere(t_vector position, t_elem *s_pixel, t_vector direction, int i);
-double ft_intersect_ray_plane(t_vector position, t_elem *s_pixel, t_vector direction, int i);
-void ft_after_mouse(t_elem *s_pixel, int x, int y, int key);
-int ft_get_object(t_elem *s_pixel, int x, int y);
-double ft_intersect_ray_cone(t_vector position, t_elem *s_pixel, t_vector direction, int i);
-double ft_intersect_ray_cylinder(t_vector position, t_elem *s_pixel, t_vector direction, int i);
-t_vector ft_normalize_vector(t_vector vec);
-int ft_check_size(t_vector vec, int type_of_object, t_elem *s_pixel);
-double  ft_dot_product(t_vector vec1, t_vector vec2);
-int ft_lighting(int color, int t, t_elem *s_pixel, t_vector position, t_vector direction);
-unsigned ft_change_color(unsigned color, double k);
-double ft_vector_len(t_vector vec);
-int ft_is_shadow(t_elem *s_pixel, double t, t_vector direction, int i);
-void ft_change_light(t_elem *s_pixel);
-t_vector ft_reflect_ray(t_vector r, t_vector normal);
-unsigned ft_add_color(unsigned color1, unsigned color2);
-t_vector ft_rotate_camera(t_vector direction, t_elem *s_pixel);
-void ft_image_on_screen(t_elem *s_pixel);
-void mouse_press(t_elem *s_pixel);
-void mouse_release(t_elem *s_pixel);
-void ft_validate_light(t_elem *s_pixel, int i, int k);
-int ft_check_if_equal(t_vector vec1, t_vector vec2);
+void        ft_check_key(t_elem *s_pixel);
+void        ft_main_draw(t_elem *s_pixel);
+void        ft_validate_input(char *line, t_elem *s_pixel);
+void        ft_refresh(t_elem *s_pixel);
+t_vector    ft_canvas_to_viewport(double x, double y);
+double      ft_intersect_ray_sphere(t_vector position, t_elem *s_pixel, t_vector direction, int i);
+double      ft_intersect_ray_plane(t_vector position, t_elem *s_pixel, t_vector direction, int i);
+void        ft_after_mouse(t_elem *s_pixel, int x, int y, int key);
+int         ft_get_object(t_elem *s_pixel, int x, int y);
+double      ft_intersect_ray_cone(t_vector position, t_elem *s_pixel, t_vector direction, int i);
+double      ft_intersect_ray_cylinder(t_vector position, t_elem *s_pixel, t_vector direction, int i);
+t_vector    ft_normalize_vector(t_vector vec);
+int         ft_check_size(t_vector vec, int type_of_object, t_elem *s_pixel);
+double      ft_dot_product(t_vector vec1, t_vector vec2);
+int         ft_lighting(int color, int t, t_elem *s_pixel, t_vector direction);
+unsigned    ft_change_color(unsigned color, double k);
+double      ft_vector_len(t_vector vec);
+int         ft_is_shadow(t_elem *s_pixel, double t, t_vector direction, int i);
+void        ft_change_light(t_elem *s_pixel);
+t_vector    ft_reflect_ray(t_vector r, t_vector normal);
+unsigned    ft_add_color(unsigned color1, unsigned color2);
+t_vector    ft_rotate_camera(t_vector direction, t_elem *s_pixel);
+void        ft_image_on_screen(t_elem *s_pixel);
+void        mouse_press(t_elem *s_pixel);
+void        mouse_release(t_elem *s_pixel);
+void        ft_validate_light(t_elem *s_pixel, int i, int k);
+int         ft_check_if_equal(t_vector vec1, t_vector vec2);
+void        ft_change_obj_size(t_elem *s_pixel);
 #endif
