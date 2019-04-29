@@ -6,12 +6,14 @@
 /*   By: arudyi <arudyi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/28 16:50:17 by arudyi            #+#    #+#             */
-/*   Updated: 2019/04/27 19:03:11 by arudyi           ###   ########.fr       */
+/*   Updated: 2019/04/29 21:48:06 by arudyi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef RTV1_H
 # define RTV1_H
+
+# include <stdio.h>
 
 # include <stdlib.h>
 # include <math.h>
@@ -24,6 +26,30 @@
 # define WIDTH 1000
 # define HEIGHT 1000
 # define THREADS 20
+# define ESC (s_pixel->event.key.keysym.sym == SDLK_ESCAPE)
+# define BACKSPACE (s_pixel->event.key.keysym.sym == SDLK_BACKSPACE)
+# define ARROW (s_pixel->event.key.keysym.sym == SDLK_DOWN || s_pixel->event.key.keysym.sym == SDLK_UP || s_pixel->event.key.keysym.sym == SDLK_LEFT || s_pixel->event.key.keysym.sym == SDLK_RIGHT)
+# define LIGHT (s_pixel->event.key.keysym.sym == SDLK_1 || s_pixel->event.key.keysym.sym == SDLK_2)
+# define SPECULAR (s_pixel->event.key.keysym.sym == SDLK_3 || s_pixel->event.key.keysym.sym == SDLK_4)
+# define REFLECT (s_pixel->event.key.keysym.sym == SDLK_5 || s_pixel->event.key.keysym.sym == SDLK_6)
+# define SIZE (s_pixel->event.key.keysym.sym == SDLK_KP_PLUS || s_pixel->event.key.keysym.sym == SDLK_KP_MINUS)
+# define NORMAL s_pixel->normal_now
+# define RAY_POS (s_pixel->arr_light[i].type_of_light == 1) ? s_pixel->arr_light[i].position - (s_pixel->player.position + direction * t) : s_pixel->arr_light[i].position
+# define CHECK_SHADOW if (ft_is_shadow(s_pixel, t, direction, i) == 1) continue ;
+# define CHECK_DIFFUSE n_dot_l = ft_dot_product(NORMAL, ray_light); if (n_dot_l >= 0) k += s_pixel->arr_light[i].intensity * n_dot_l / ft_vector_len(ray_light);
+# define CHECK_SPECULAR if (s_pixel->arr_object3d[s_pixel->obj_now].specular > 0) { r = 2.0 * NORMAL * ft_dot_product(NORMAL, ray_light) - ray_light; r_dot_v = ft_dot_product(r, -direction); if (r_dot_v > 0) k += s_pixel->arr_light[i].intensity * pow(r_dot_v / (ft_vector_len(r) * ft_vector_len(-direction)), s_pixel->arr_object3d[s_pixel->obj_now].specular);}
+
+
+
+
+
+
+
+
+
+
+
+
 typedef double	t_vector __attribute__((ext_vector_type(4)));
 
 typedef struct s_plane
@@ -39,6 +65,12 @@ typedef struct s_cone
     double angle;
     double height;
     double radius;
+	/*double a;
+	double b;
+	double c;
+	double t1;
+	double t2;
+	t_vector v;*/
 }               t_cone;
 
 typedef struct s_cylinder
@@ -47,12 +79,22 @@ typedef struct s_cylinder
     t_vector p2;
     double height;
     double radius;
+	double a;
+	double b;
+	double c;
+	double t1;
+	double t2;
+	t_vector v;
 }              t_cylinder;
 
 typedef struct s_sphere
 {
     t_vector center;
     double radius;
+	double t1;
+	double t2;
+	double b;
+	double a;
 }               t_sphere;
 
 typedef struct s_object3d
@@ -66,6 +108,8 @@ typedef struct s_object3d
 
 typedef struct s_player
 {
+	int i;
+	int k;
     t_vector    position;
     double      d;
     int rotate_left;
@@ -83,10 +127,11 @@ typedef struct s_keys
     int         but5_press;
 }               t_keys;
 
-typedef struct s_skybox
+typedef struct s_obj
 {
-    int         type_of_skybox;
-}               t_skybox;
+    int         k;
+	double		t;
+}               t_obj;
 
 typedef struct s_light
 {
@@ -102,26 +147,23 @@ typedef struct		s_elem
 	SDL_Renderer    *renderrer;
     SDL_Event       event;
     SDL_Surface     *surface;
-    int             is_reflect;
-    int             is_shadow;
-    int             is_specular;
     char            *text;
     int             figure_now;
     double          t_min;
     double          t_max;
     int             i;
     int             depth_recursive;
-    //int             color_now;
     int             obj_now;
     int             is_intersect;
     t_vector        intersect;
     t_player        player;
     int             nbr_of_obj;
     int             nbr_of_light;
-    t_object3d      arr_object3d[100];
-    t_light         arr_light[10];
+    t_object3d      arr_object3d[10];
+    t_light         arr_light[5];
     t_keys          keys;
     t_vector        normal_now;
+	t_obj			obj;
 }					t_elem;
 
 
@@ -147,7 +189,7 @@ double      ft_vector_len(t_vector vec);
 int         ft_is_shadow(t_elem *s_pixel, double t, t_vector direction, int i);
 void        ft_change_light(t_elem *s_pixel);
 t_vector    ft_reflect_ray(t_vector r, t_vector normal);
-unsigned    ft_add_color(unsigned color1, unsigned color2);
+unsigned    ft_add_color(unsigned color1, unsigned color2, unsigned new_color, unsigned r1);
 t_vector    ft_rotate_camera(t_vector direction, t_elem *s_pixel);
 void        ft_image_on_screen(t_elem *s_pixel);
 void        mouse_press(t_elem *s_pixel);
@@ -155,4 +197,34 @@ void        mouse_release(t_elem *s_pixel);
 void        ft_validate_light(t_elem *s_pixel, int i, int k);
 int         ft_check_if_equal(t_vector vec1, t_vector vec2);
 void        ft_change_obj_size(t_elem *s_pixel);
+int         ft_trace_ray(t_vector position, t_elem *s_pixel, t_vector direction, int depth);
+void *ft_draw_display(void *data);
+void ft_main_draw(t_elem *s_pixel);
+void ft_mouse_press(t_elem *s_pixel);
+void ft_mouse_wheel(t_elem *s_pixel, int i);
+void ft_mouse_release(t_elem *s_pixel);
+void ft_mouse_move(t_elem *s_pixel, int i);
+int exit_program(t_elem *s_pixel);
+void    ft_draw_pixel(t_elem *s_pixel, int x, int y, int color);
+void ft_wait_for_input(t_elem *s_pixel);
+void ft_change_position(t_elem *s_pixel, double angle1, double angle2);
+void ft_change_object(t_elem *s_pixel, double angle_x, double angle_z, int i);
+void ft_change_light(t_elem *s_pixel);
+void ft_change_specular(t_elem *s_pixel);
+void ft_change_reflective(t_elem *s_pixel);
+void ft_change_obj_size(t_elem *s_pixel);
+void	ft_prepare_programm1(t_elem *s_pixel);
+void	ft_change_obj_size_sphere(t_elem *s_pixel, int i);
+void	ft_change_obj_size_cylinder(t_elem *s_pixel, int i);
+void	ft_change_obj_size_cone(t_elem *s_pixel, int i);
+void ft_change_object_up_down(t_elem *s_pixel, int i, double angle_x);
+void ft_change_object_left_right(t_elem *s_pixel, int i, double angle_z);
+void	ft_change_object_up_down1(t_elem *s_pixel, int i, double angle_x);
+void	ft_change_object_left_right1(t_elem *s_pixel, int i, double angle_z);
+//double ft_find_cone1(t_elem *s_pixel, double denom, int i, t_vector direction);
+void	ft_validate_sphere(t_elem *s_pixel, int i);
+void	ft_validate_cylinder(t_elem *s_pixel, int i);
+void	ft_validate_plane(t_elem *s_pixel, int i);
+void	ft_validate_cone(t_elem *s_pixel, int i);
+void	ft_validate_amb_light(t_elem *s_pixel, int k);
 #endif
