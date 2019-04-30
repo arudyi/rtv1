@@ -6,7 +6,7 @@
 /*   By: arudyi <arudyi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/29 14:31:06 by arudyi            #+#    #+#             */
-/*   Updated: 2019/04/29 17:13:15 by arudyi           ###   ########.fr       */
+/*   Updated: 2019/04/30 14:03:06 by arudyi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,10 +25,7 @@ t_vector	ft_normalize_vector(t_vector vec)
 
 double		ft_dot_product(t_vector vec1, t_vector vec2)
 {
-	double nbr;
-
-	nbr = vec1.x * vec2.x + vec1.y * vec2.y + vec1.z * vec2.z;
-	return (nbr);
+	return (vec1.x * vec2.x + vec1.y * vec2.y + vec1.z * vec2.z);
 }
 
 t_vector	ft_reflect_ray(t_vector r, t_vector normal)
@@ -38,8 +35,5 @@ t_vector	ft_reflect_ray(t_vector r, t_vector normal)
 
 double		ft_vector_len(t_vector vec)
 {
-	double len;
-
-	len = sqrt(ft_dot_product(vec, vec));
-	return (len);
+	return (sqrt(ft_dot_product(vec, vec)));
 }

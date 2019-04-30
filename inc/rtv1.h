@@ -6,7 +6,7 @@
 /*   By: arudyi <arudyi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/28 16:50:17 by arudyi            #+#    #+#             */
-/*   Updated: 2019/04/29 21:48:06 by arudyi           ###   ########.fr       */
+/*   Updated: 2019/04/30 15:37:35 by arudyi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,26 +20,30 @@
 # include <float.h>
 # include <pthread.h>
 # include "../frameworks/SDL2/SDL.h"
-# include "../frameworks/SDL2/SDL_thread.h"
 # include "../frameworks/SDL2_image.framework/Headers/SDL_image.h"
 # include "../lib/libft/includes/libft.h"
 # define WIDTH 1000
 # define HEIGHT 1000
 # define THREADS 20
-# define ESC (s_pixel->event.key.keysym.sym == SDLK_ESCAPE)
-# define BACKSPACE (s_pixel->event.key.keysym.sym == SDLK_BACKSPACE)
-# define ARROW (s_pixel->event.key.keysym.sym == SDLK_DOWN || s_pixel->event.key.keysym.sym == SDLK_UP || s_pixel->event.key.keysym.sym == SDLK_LEFT || s_pixel->event.key.keysym.sym == SDLK_RIGHT)
-# define LIGHT (s_pixel->event.key.keysym.sym == SDLK_1 || s_pixel->event.key.keysym.sym == SDLK_2)
-# define SPECULAR (s_pixel->event.key.keysym.sym == SDLK_3 || s_pixel->event.key.keysym.sym == SDLK_4)
-# define REFLECT (s_pixel->event.key.keysym.sym == SDLK_5 || s_pixel->event.key.keysym.sym == SDLK_6)
-# define SIZE (s_pixel->event.key.keysym.sym == SDLK_KP_PLUS || s_pixel->event.key.keysym.sym == SDLK_KP_MINUS)
+# define ESC (key == SDLK_ESCAPE)
+# define BACKSPACE (key == SDLK_BACKSPACE)
+# define ARROW_UP key == SDLK_DOWN || key == SDLK_UP
+# define ARROW_LEFT key == SDLK_LEFT || key == SDLK_RIGHT
+# define LIGHT (key == SDLK_1 || key == SDLK_2)
+# define SPECULAR (key == SDLK_3 || key == SDLK_4)
+# define REFLECT (key == SDLK_5 || key == SDLK_6)
+# define SIZE (key == SDLK_KP_PLUS || key == SDLK_KP_MINUS)
 # define NORMAL s_pixel->normal_now
-# define RAY_POS (s_pixel->arr_light[i].type_of_light == 1) ? s_pixel->arr_light[i].position - (s_pixel->player.position + direction * t) : s_pixel->arr_light[i].position
-# define CHECK_SHADOW if (ft_is_shadow(s_pixel, t, direction, i) == 1) continue ;
-# define CHECK_DIFFUSE n_dot_l = ft_dot_product(NORMAL, ray_light); if (n_dot_l >= 0) k += s_pixel->arr_light[i].intensity * n_dot_l / ft_vector_len(ray_light);
-# define CHECK_SPECULAR if (s_pixel->arr_object3d[s_pixel->obj_now].specular > 0) { r = 2.0 * NORMAL * ft_dot_product(NORMAL, ray_light) - ray_light; r_dot_v = ft_dot_product(r, -direction); if (r_dot_v > 0) k += s_pixel->arr_light[i].intensity * pow(r_dot_v / (ft_vector_len(r) * ft_vector_len(-direction)), s_pixel->arr_object3d[s_pixel->obj_now].specular);}
-
-
+# define P_POS s_pixel->player.position
+# define TY_LI s_pixel->arr_light[i].type_of_light
+# define P_L s_pixel->arr_light[i].position
+# define L_INTE s_pixel->arr_light[i].intensity
+# define SPECU_OBJ s_pixel->arr_object3d[s_pixel->obj_now].specular
+# define LEN(vec) (sqrt(ft_dot_product(vec, vec)))
+# define DOT(vec1, vec2) (ft_dot_product(vec1, vec2))
+# define TYPE_OBJ s_pixel->arr_object3d[k].type_of_data
+# define T_MAX s_pixel->obj.t_max
+# define BYTE s_pixel->surface->format->BytesPerPixel 
 
 
 
@@ -129,6 +133,7 @@ typedef struct s_keys
 
 typedef struct s_obj
 {
+	double		t_max;
     int         k;
 	double		t;
 }               t_obj;

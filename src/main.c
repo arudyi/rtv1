@@ -6,7 +6,7 @@
 /*   By: arudyi <arudyi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/28 16:50:13 by arudyi            #+#    #+#             */
-/*   Updated: 2019/04/29 21:07:42 by arudyi           ###   ########.fr       */
+/*   Updated: 2019/04/30 15:13:42 by arudyi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ void	ft_prepare_programm1(t_elem *s_pixel)
 	//ft_validate_input("add cylinder", s_pixel);
 	ft_validate_input("add sphere", s_pixel);
 	ft_validate_input("add plane", s_pixel);
-	//ft_validate_input("add point light", s_pixel);
+	ft_validate_input("add point light", s_pixel);
 	ft_validate_input("add directional light", s_pixel);
 }
 

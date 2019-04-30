@@ -6,7 +6,7 @@
 /*   By: arudyi <arudyi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/29 14:18:18 by arudyi            #+#    #+#             */
-/*   Updated: 2019/04/29 19:00:12 by arudyi           ###   ########.fr       */
+/*   Updated: 2019/04/30 15:32:53 by arudyi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ double		ft_find_sphere(t_elem *s_pixel, int i, double denom)
 	return (-1);
 }
 
-double	ft_intersect_ray_sphere(t_vector position, t_elem *s_pixel,
+double		ft_intersect_ray_sphere(t_vector position, t_elem *s_pixel,
 t_vector direction, int i)
 {
 	double		a;

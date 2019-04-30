@@ -6,7 +6,7 @@
 /*   By: arudyi <arudyi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/29 14:18:48 by arudyi            #+#    #+#             */
-/*   Updated: 2019/04/29 21:35:49 by arudyi           ###   ########.fr       */
+/*   Updated: 2019/04/30 13:22:57 by arudyi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,11 +14,14 @@
 
 void	ft_check_key(t_elem *s_pixel)
 {
+	int key;
+
+	key = s_pixel->event.key.keysym.sym;
 	if (ESC)
 		exit_program(s_pixel);
 	else if (BACKSPACE)
 		ft_wait_for_input(s_pixel);
-	else if (ARROW)
+	else if (ARROW_UP || ARROW_LEFT)
 		ft_change_object(s_pixel, 0.0, 0.0, -1);
 	else if (LIGHT)
 		ft_change_light(s_pixel);
