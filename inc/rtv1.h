@@ -6,7 +6,7 @@
 /*   By: arudyi <arudyi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/28 16:50:17 by arudyi            #+#    #+#             */
-/*   Updated: 2019/04/30 17:23:23 by arudyi           ###   ########.fr       */
+/*   Updated: 2019/04/30 19:04:17 by arudyi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,12 +131,24 @@ typedef struct s_keys
     int         but5_press;
 }               t_keys;
 
+
+
+
 typedef struct s_trace
 {
-	double		t_max;
-    int         k;
+	int i;
+	double		reflect_color1;
+	t_vector	r;
+	double		local_color;
 	double		t;
+	double		tmp;
+	double		t_max;
+	double		reflect;
+	t_vector	normal;
 }               t_trace;/////
+
+
+
 
 typedef struct s_obj
 {

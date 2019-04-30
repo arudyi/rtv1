@@ -6,7 +6,7 @@
 /*   By: arudyi <arudyi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/29 20:08:22 by arudyi            #+#    #+#             */
-/*   Updated: 2019/04/29 21:45:19 by arudyi           ###   ########.fr       */
+/*   Updated: 2019/04/30 17:48:09 by arudyi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ void	ft_validate_sphere(t_elem *s_pixel, int i)
 	s_sphere->center.y = s_pixel->player.position.y;
 	s_sphere->center.z = s_pixel->player.position.z + 1000;
 	s_sphere->radius = 100.0;
-	s_pixel->arr_object3d[i].reflective = 0.5;
+	s_pixel->arr_object3d[i].reflective = 0.1;
 	s_pixel->arr_object3d[i].specular = 100;
 	s_pixel->arr_object3d[i].color = 0x999900;
 	s_pixel->arr_object3d[i].type_of_data = 0;
