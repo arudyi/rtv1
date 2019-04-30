@@ -6,7 +6,7 @@
 /*   By: arudyi <arudyi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/29 14:38:01 by arudyi            #+#    #+#             */
-/*   Updated: 2019/04/29 20:41:44 by arudyi           ###   ########.fr       */
+/*   Updated: 2019/04/30 17:17:53 by arudyi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ void ft_main_draw(t_elem *s_pixel)
     i = -1;
     while (++i < THREADS)
         pthread_create(&thread[i], NULL, ft_draw_display, (void*)s_pixel);
-    while (1)
+	while (1)
     {
         if (SDL_PollEvent(&s_pixel->event))
         {
@@ -39,29 +39,32 @@ void ft_main_draw(t_elem *s_pixel)
         }
         else
         {
-            ft_draw_display(s_pixel);
+			i = -1;
+			while (++i < THREADS)
+        		pthread_join(thread[i], NULL);//
+			ft_draw_display(s_pixel);
             ft_image_on_screen(s_pixel);
         }
     }
-    i = -1;
-    while (++i < THREADS)
-        pthread_join(thread[i], NULL);
 }
 
 void *ft_draw_display(void *data)
 {
-    t_elem *s_pixel = (t_elem *)data;
-    t_vector direction;
+    t_elem *s_pixel;    
+	t_vector direction;
     int color;
     int x;
     int y;
+	static int i = 0;
 
-    if (s_pixel->i == THREADS)
-        s_pixel->i = 0;
-    s_pixel->t_max = DBL_MAX;
+	s_pixel = (t_elem *)malloc(sizeof(t_elem));
+	*s_pixel = *((t_elem *)data);
+	if (i == THREADS)
+        i = 0;
+	s_pixel->t_max = DBL_MAX;
     s_pixel->t_min = 0;
-    x = ((WIDTH / THREADS) * s_pixel->i) - 1;
-    int x1 = ((WIDTH / THREADS) * (++s_pixel->i));
+    x = ((WIDTH / THREADS) * i) - 1;
+    int x1 = ((WIDTH / THREADS) * (++i));
     while (++x < x1)
     {
         y = -1;
@@ -83,5 +86,6 @@ void *ft_draw_display(void *data)
     }
     s_pixel->player.rotate_left = 0;
     s_pixel->player.rotate_right = 0;
-    return (0);
+	free(s_pixel);
+	return (0);
 }

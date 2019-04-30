@@ -6,7 +6,7 @@
 /*   By: arudyi <arudyi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/29 14:18:18 by arudyi            #+#    #+#             */
-/*   Updated: 2019/04/30 15:32:53 by arudyi           ###   ########.fr       */
+/*   Updated: 2019/04/30 17:07:30 by arudyi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,9 +47,9 @@ t_vector direction, int i)
 	t_vector	oc;
 
 	oc = position - ((t_sphere *)s_pixel->arr_object3d[i].data)->center;
-	a = ft_dot_product(direction, direction);
-	b = 2 * ft_dot_product(oc, direction);
-	c = ft_dot_product(oc, oc) - pow(((t_sphere *)s_pixel->
+	a = DOT(direction, direction);
+	b = 2 * DOT(oc, direction);
+	c = DOT(oc, oc) - pow(((t_sphere *)s_pixel->
 	arr_object3d[i].data)->radius, 2);
 	((t_sphere *)s_pixel->arr_object3d[i].data)->b = b;
 	((t_sphere *)s_pixel->arr_object3d[i].data)->a = a;

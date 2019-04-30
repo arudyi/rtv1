@@ -6,7 +6,7 @@
 #    By: arudyi <arudyi@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2019/03/15 15:00:28 by arudyi            #+#    #+#              #
-#    Updated: 2019/04/29 20:48:14 by arudyi           ###   ########.fr        #
+#    Updated: 2019/04/30 17:04:33 by arudyi           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,7 +16,7 @@ SRC_DIR = ./src/
 OBJ_DIR = ./obj/
 INCLUDE_DIR = ./include/
 LIB_DIR = ./lib/
-SRC = main.c cone.c cylinder.c key_input.c light.c mouse_input.c plane.c render.c sphere.c validate.c shadow.c main_draw.c additional.c additional1.c change_scene.c change_scene1.c change_scene2.c get_obj.c validate1.c mouse_input1.c
+SRC = main.c cone.c cylinder.c key_input.c light.c mouse_input.c plane.c render.c sphere.c validate.c shadow.c main_draw.c additional.c additional1.c change_scene.c change_scene1.c change_scene2.c get_obj.c validate1.c mouse_input1.c render1.c
 OBJ = $(addprefix $(OBJ_DIR), $(SRC:.c=.o))
 LIBFT = $(LIBFT_DIR)libft.a
 LIBFT_DIR := $(LIB_DIR)libft/

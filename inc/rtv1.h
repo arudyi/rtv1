@@ -6,7 +6,7 @@
 /*   By: arudyi <arudyi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/28 16:50:17 by arudyi            #+#    #+#             */
-/*   Updated: 2019/04/30 15:37:35 by arudyi           ###   ########.fr       */
+/*   Updated: 2019/04/30 17:23:23 by arudyi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@
 # include "../lib/libft/includes/libft.h"
 # define WIDTH 1000
 # define HEIGHT 1000
-# define THREADS 20
+# define THREADS 80
 # define ESC (key == SDLK_ESCAPE)
 # define BACKSPACE (key == SDLK_BACKSPACE)
 # define ARROW_UP key == SDLK_DOWN || key == SDLK_UP
@@ -39,8 +39,8 @@
 # define P_L s_pixel->arr_light[i].position
 # define L_INTE s_pixel->arr_light[i].intensity
 # define SPECU_OBJ s_pixel->arr_object3d[s_pixel->obj_now].specular
-# define LEN(vec) (sqrt(ft_dot_product(vec, vec)))
-# define DOT(vec1, vec2) (ft_dot_product(vec1, vec2))
+# define LEN(vec) (sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z))
+# define DOT(vec1, vec2) (vec1.x * vec2.x + vec1.y * vec2.y + vec1.z * vec2.z)
 # define TYPE_OBJ s_pixel->arr_object3d[k].type_of_data
 # define T_MAX s_pixel->obj.t_max
 # define BYTE s_pixel->surface->format->BytesPerPixel 
@@ -130,6 +130,13 @@ typedef struct s_keys
     int         but4_press;
     int         but5_press;
 }               t_keys;
+
+typedef struct s_trace
+{
+	double		t_max;
+    int         k;
+	double		t;
+}               t_trace;/////
 
 typedef struct s_obj
 {

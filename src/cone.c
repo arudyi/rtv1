@@ -6,7 +6,7 @@
 /*   By: arudyi <arudyi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/29 14:18:56 by arudyi            #+#    #+#             */
-/*   Updated: 2019/04/29 19:30:15 by arudyi           ###   ########.fr       */
+/*   Updated: 2019/04/30 17:09:24 by arudyi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,9 +92,9 @@ double	ft_intersect_ray_cone(t_vector position, t_elem *s_pixel, t_vector direct
 	//((t_cone *)s_pixel->arr_object3d[i].data)->v = v;
 	x = position - ((t_cone *)s_pixel->arr_object3d[i].data)->p1;
 	k = tan(((t_cone *)s_pixel->arr_object3d[i].data)->angle / 2.0 / 180.0 * 3.14);
-	a = ft_dot_product(direction, direction) - (1.0 + k * k) * pow(ft_dot_product(direction, v), 2);
-	b = 2.0 * (ft_dot_product(direction, x) - (1.0 + k * k) * ft_dot_product(direction, v) * ft_dot_product(x, v));
-	c = ft_dot_product(x, x) - (1.0 + k * k) * pow(ft_dot_product(x, v), 2);
+	a = DOT(direction, direction) - (1.0 + k * k) * pow(DOT(direction, v), 2);
+	b = 2.0 * (DOT(direction, x) - (1.0 + k * k) * DOT(direction, v) * DOT(x, v));
+	c = DOT(x, x) - (1.0 + k * k) * pow(DOT(x, v), 2);
 	
 	denom = b * b - 4 * a * c;
 	if (denom < 0)
