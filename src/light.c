@@ -6,7 +6,7 @@
 /*   By: arudyi <arudyi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/29 14:18:45 by arudyi            #+#    #+#             */
-/*   Updated: 2019/04/30 14:52:09 by arudyi           ###   ########.fr       */
+/*   Updated: 2019/05/01 12:54:26 by arudyi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,8 @@ double		ft_lightting1(t_elem *s_pixel, t_vector r_li, int i, t_vector dir)
 		r = 2.0 * NORMAL * DOT(NORMAL, r_li) - r_li;
 		n_dot_l = DOT(r, -dir);
 		if (n_dot_l > 0)
-			k += L_INTE * pow(n_dot_l / (LEN(r) * LEN(-dir)), SPECU_OBJ);
+			k += L_INTE * pow(n_dot_l / ((ft_vector_len(r) * ft_vector_len(
+				-dir))), SPECU_OBJ);
 	}
 	return (k);
 }

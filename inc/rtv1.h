@@ -6,7 +6,7 @@
 /*   By: arudyi <arudyi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/28 16:50:17 by arudyi            #+#    #+#             */
-/*   Updated: 2019/04/30 19:04:17 by arudyi           ###   ########.fr       */
+/*   Updated: 2019/05/01 13:27:24 by arudyi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,15 +44,25 @@
 # define TYPE_OBJ s_pixel->arr_object3d[k].type_of_data
 # define T_MAX s_pixel->obj.t_max
 # define BYTE s_pixel->surface->format->BytesPerPixel 
+# define RADIUS_CYL ((t_cylinder *)s_pixel->arr_object3d[i].data)->radius
+# define T1_CYL ((t_cylinder *)s_pixel->arr_object3d[i].data)->t1
+# define T2_CYL ((t_cylinder *)s_pixel->arr_object3d[i].data)->t2
+# define A_CYL ((t_cylinder *)s_pixel->arr_object3d[i].data)->a
+# define B_CYL ((t_cylinder *)s_pixel->arr_object3d[i].data)->b
+# define C_CYL ((t_cylinder *)s_pixel->arr_object3d[i].data)->c
+# define P1_CYL ((t_cylinder *)s_pixel->arr_object3d[i].data)->p1
+# define P2_CYL ((t_cylinder *)s_pixel->arr_object3d[i].data)->p2
+# define HEIGHT_CYL ((t_cylinder *)s_pixel->arr_object3d[i].data)->height
 
-
-
-
-
-
-
-
-
+# define A_CONE ((t_cone *)s_pixel->arr_object3d[i].data)->a
+# define B_CONE ((t_cone *)s_pixel->arr_object3d[i].data)->b
+# define C_CONE ((t_cone *)s_pixel->arr_object3d[i].data)->c
+# define T1_CONE ((t_cone *)s_pixel->arr_object3d[i].data)->t1
+# define T2_CONE ((t_cone *)s_pixel->arr_object3d[i].data)->t2
+# define HEIGHT_CONE ((t_cone *)s_pixel->arr_object3d[i].data)->height
+# define P1_CONE ((t_cone *)s_pixel->arr_object3d[i].data)->p1
+# define P2_CONE ((t_cone *)s_pixel->arr_object3d[i].data)->p2
+# define K_CONE ((t_cone *)s_pixel->arr_object3d[i].data)->k
 
 typedef double	t_vector __attribute__((ext_vector_type(4)));
 
@@ -69,12 +79,12 @@ typedef struct s_cone
     double angle;
     double height;
     double radius;
-	/*double a;
+	double a;
 	double b;
 	double c;
 	double t1;
 	double t2;
-	t_vector v;*/
+	double k;
 }               t_cone;
 
 typedef struct s_cylinder
@@ -145,6 +155,7 @@ typedef struct s_trace
 	double		t_max;
 	double		reflect;
 	t_vector	normal;
+	t_vector	direction;
 }               t_trace;/////
 
 
@@ -251,4 +262,9 @@ void	ft_validate_cylinder(t_elem *s_pixel, int i);
 void	ft_validate_plane(t_elem *s_pixel, int i);
 void	ft_validate_cone(t_elem *s_pixel, int i);
 void	ft_validate_amb_light(t_elem *s_pixel, int k);
+void	ft_get_trace(t_elem *s_pixel, t_trace *trace);
+void	ft_get_t_min_max(t_elem *s_pixel);
+int		ft_trace_ray1(t_elem *s_pixel, int depth, t_trace *trace, t_vector position);
+
+
 #endif

@@ -6,7 +6,7 @@
 /*   By: arudyi <arudyi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/30 17:03:57 by arudyi            #+#    #+#             */
-/*   Updated: 2019/04/30 17:04:09 by arudyi           ###   ########.fr       */
+/*   Updated: 2019/05/01 12:45:03 by arudyi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,4 +43,30 @@ void	ft_image_on_screen(t_elem *s_pixel)
 	&destinationrectangle);
 	SDL_RenderPresent(s_pixel->renderrer);
 	SDL_DestroyTexture(texture);
+}
+
+void	ft_get_trace(t_elem *s_pixel, t_trace *trace)
+{
+	trace->local_color = 0x000000;
+	trace->t = s_pixel->t_max;
+}
+
+void	ft_get_t_min_max(t_elem *s_pixel)
+{
+	s_pixel->t_max = DBL_MAX;
+	s_pixel->t_min = 0.00001;
+}
+
+int		ft_trace_ray1(t_elem *s_pixel, int depth, t_trace *trace,
+t_vector position)
+{
+	t_vector	r;
+	double		reflect_color1;
+
+	r = ft_reflect_ray(-trace->direction, trace->normal);
+	ft_get_t_min_max(s_pixel);
+	reflect_color1 = ft_trace_ray(position + trace->direction * trace->t,
+	s_pixel, r, depth - 1);
+	return (ft_add_color(ft_change_color(trace->local_color, (1.0 - trace->
+	reflect)), ft_change_color(reflect_color1, trace->reflect), 0, 0));
 }
