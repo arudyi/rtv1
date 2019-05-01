@@ -6,7 +6,7 @@
 /*   By: arudyi <arudyi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/28 16:50:13 by arudyi            #+#    #+#             */
-/*   Updated: 2019/05/01 13:25:52 by arudyi           ###   ########.fr       */
+/*   Updated: 2019/05/01 13:46:49 by arudyi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ void	ft_prepare_programm1(t_elem *s_pixel)
 	s_pixel->player.rotate_right = 0;
 	s_pixel->player.rotate_left = 0;
 	ft_validate_input("add cone", s_pixel);
-	//ft_validate_input("add cylinder", s_pixel);
+	ft_validate_input("add cylinder", s_pixel);
 	ft_validate_input("add sphere", s_pixel);
 	ft_validate_input("add plane", s_pixel);
 	ft_validate_input("add point light", s_pixel);
@@ -71,6 +71,6 @@ int		main(void)
 	if (!(s_pixel = (t_elem *)malloc(sizeof(t_elem))))
 		exit(0);
 	ft_prepare_programm(s_pixel);
-	ft_main_draw(s_pixel);
+	ft_main_draw(s_pixel, -1);
 	return (0);
 }

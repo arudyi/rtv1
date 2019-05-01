@@ -6,7 +6,7 @@
 /*   By: arudyi <arudyi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/29 20:08:22 by arudyi            #+#    #+#             */
-/*   Updated: 2019/04/30 17:48:09 by arudyi           ###   ########.fr       */
+/*   Updated: 2019/05/01 14:27:20 by arudyi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ void	ft_validate_plane(t_elem *s_pixel, int i)
 	plane->point.y = s_pixel->player.position.y - 300;
 	plane->point.z = s_pixel->player.position.z + 1000;
 	plane->normal.x = s_pixel->player.position.x;
-	plane->normal.y = s_pixel->player.position.y - 299;
+	plane->normal.y = s_pixel->player.position.y - 200;
 	plane->normal.z = s_pixel->player.position.x + 1000;
 	s_pixel->arr_object3d[i].reflective = 0;
 	s_pixel->arr_object3d[i].specular = -1;
